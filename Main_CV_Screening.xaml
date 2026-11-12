@@ -1,0 +1,34 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Main_CV_Screening" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="42">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System.Activities.Expressions</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="38">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>System.Data</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Entry Point 1: Dispatcher &amp; Performer untuk Ekstraksi Teks CV, Pemahaman Semantik Gemini LLM, Evaluasi Knock-out Dinamis, dan Skoring Terbobot." DisplayName="Main_CV_Screening" sap:VirtualizedContainerService.HintSize="512,680" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Default="RF_CV_Screening" Name="processName" />
+      <Variable x:TypeArguments="x:String" Name="apiBaseUrl" />
+      <Variable x:TypeArguments="x:String" Name="apiToken" />
+    </Sequence.Variables>
+    <ui:LogMessage DisplayName="Log Start Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;[RF_CV_Screening] Memulai siklus pemeriksaan berkas lamaran baru...&quot;]" />
+    <ui:Comment DisplayName="Architecture Documentation Note" sap:VirtualizedContainerService.HintSize="450,115" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Langkah Alur Kerja:&#xA;// 1. Init: Membaca aset RF_Api_BaseUrl dan RF_Api_Token dari Orchestrator.&#xA;// 2. Dispatcher: GET /robot/applications?status=BARU, klaim via POST /claim, tambahkan ke antrean RF_CV_Processing.&#xA;// 3. Performer: Unduh PDF, Ekstraksi teks &amp; Fallback OCR, Panggil Gemini 3.8 Flash, Evaluasi Knock-out &amp; Formula Bobot, POST hasil skor ke Platform." />
+    <ui:LogMessage DisplayName="Log End Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[&quot;[RF_CV_Screening] Siklus pemrosesan berkas selesai dengan status sukses.&quot;]" />
+  </Sequence>
+</Activity>

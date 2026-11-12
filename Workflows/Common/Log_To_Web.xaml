@@ -1,0 +1,13 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Log_To_Web" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Process" Type="InArgument(x:String)" />
+    <x:Property Name="in_ApplicationId" Type="InArgument(x:String)" />
+    <x:Property Name="in_Level" Type="InArgument(x:String)" />
+    <x:Property Name="in_Event" Type="InArgument(x:String)" />
+    <x:Property Name="in_Details" Type="InArgument(x:String)" />
+  </x:Members>
+  <Sequence sap2010:Annotation.AnnotationText="Mengirimkan telemetri peristiwa bisnis secara real-time ke endpoint POST /robot/logs di Platform." DisplayName="Log_To_Web" sap:VirtualizedContainerService.HintSize="450,450" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <ui:LogMessage DisplayName="Local Studio Log" sap:VirtualizedContainerService.HintSize="388,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[String.Format(&quot;[{0}] {1}: {2} (App: {3})&quot;, in_Process, in_Level, in_Event, in_ApplicationId)]" />
+    <ui:Comment DisplayName="Remote Telemetry Note" sap:VirtualizedContainerService.HintSize="388,115" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Panggil POST /robot/logs dengan payload:&#xA;// { process, application_id, level, event, details }&#xA;// Menghubungkan aktivitas robot langsung ke tabel robot_logs di Platform." />
+  </Sequence>
+</Activity>

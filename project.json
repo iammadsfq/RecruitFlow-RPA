@@ -1,0 +1,88 @@
+{
+  "name": "RecruitFlow_RPA",
+  "projectId": "8e3b5e4c-9f8a-4b72-b361-9c12e8471902",
+  "description": "RecruitFlow Unattended Intelligent Automation Engine - Automation Hackathon 2026 (#HumanInTheLead)",
+  "main": "Main_CV_Screening.xaml",
+  "dependencies": {
+    "UiPath.Excel.Activities": "[2.23.4]",
+    "UiPath.Mail.Activities": "[1.23.1]",
+    "UiPath.PDF.Activities": "[3.16.2]",
+    "UiPath.System.Activities": "[24.10.0]",
+    "UiPath.Testing.Activities": "[24.10.0]",
+    "UiPath.WebAPI.Activities": "[1.20.1]"
+  },
+  "webServices": [],
+  "entitiesStores": [],
+  "schemaVersion": "4.0",
+  "studioVersion": "24.10.0.0",
+  "projectVersion": "1.0.0",
+  "runtimeOptions": {
+    "autoDispose": false,
+    "netFrameworkSetupNotification": false
+  },
+  "designOptions": {
+    "projectProfile": "Developement",
+    "outputType": "Process",
+    "libraryOptions": {
+      "includeOriginalXaml": false,
+      "privateWorkflows": []
+    },
+    "processOptions": {
+      "ignoredFiles": []
+    },
+    "fileInfoCollection": [
+      {
+        "editingStatus": "InProgress",
+        "testCaseId": null,
+        "fileName": "Main_CV_Screening.xaml"
+      },
+      {
+        "editingStatus": "InProgress",
+        "testCaseId": null,
+        "fileName": "Main_Messaging.xaml"
+      },
+      {
+        "editingStatus": "InProgress",
+        "testCaseId": null,
+        "fileName": "Main_Scheduling.xaml"
+      },
+      {
+        "editingStatus": "InProgress",
+        "testCaseId": null,
+        "fileName": "Main_Reporting.xaml"
+      }
+    ],
+    "modernBehavior": true
+  },
+  "expressionLanguage": "VisualBasic",
+  "entryPoints": [
+    {
+      "filePath": "Main_CV_Screening.xaml",
+      "uniqueId": "ep_cv_screening",
+      "input": [],
+      "output": []
+    },
+    {
+      "filePath": "Main_Messaging.xaml",
+      "uniqueId": "ep_messaging",
+      "input": [],
+      "output": []
+    },
+    {
+      "filePath": "Main_Scheduling.xaml",
+      "uniqueId": "ep_scheduling",
+      "input": [],
+      "output": []
+    },
+    {
+      "filePath": "Main_Reporting.xaml",
+      "uniqueId": "ep_reporting",
+      "input": [],
+      "output": []
+    }
+  ],
+  "isTemplate": false,
+  "templateProjectData": {},
+  "publishData": {},
+  "targetFramework": "Windows"
+}

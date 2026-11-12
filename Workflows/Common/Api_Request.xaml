@@ -1,0 +1,13 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Api_Request" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Endpoint" Type="InArgument(x:String)" />
+    <x:Property Name="in_Method" Type="InArgument(x:String)" />
+    <x:Property Name="in_PayloadJson" Type="InArgument(x:String)" />
+    <x:Property Name="out_ResponseJson" Type="OutArgument(x:String)" />
+    <x:Property Name="out_StatusCode" Type="OutArgument(x:Int32)" />
+  </x:Members>
+  <Sequence sap2010:Annotation.AnnotationText="Wrapper HTTP Request terstandarisasi dengan Bearer Token dan penanganan kode status 2xx/4xx/5xx." DisplayName="Api_Request" sap:VirtualizedContainerService.HintSize="450,450" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <ui:LogMessage DisplayName="Log API Call" sap:VirtualizedContainerService.HintSize="388,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Trace" Message="[String.Format(&quot;[API] {0} {1}&quot;, in_Method, in_Endpoint)]" />
+    <ui:Comment DisplayName="HTTP Activity Placeholder Note" sap:VirtualizedContainerService.HintSize="388,115" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Tempatkan UiPath.WebAPI.Activities.HttpClient di sini:&#xA;// Header: Authorization: Bearer {RF_Api_Token}&#xA;// Header: Content-Type: application/json&#xA;// Output: out_ResponseJson, out_StatusCode" />
+  </Sequence>
+</Activity>
