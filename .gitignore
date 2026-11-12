@@ -1,0 +1,47 @@
+# UiPath Studio internal directories & runtime cache
+.local/
+.screenshots/
+.templates/
+.settings/
+.entities/
+.tmh/
+bin/
+obj/
+
+# Project backups and auto-saves
+*.xaml.backup
+*.backup
+*.tmp
+
+# NuGet packages and publish outputs
+*.nupkg
+output/
+
+# Microsoft Office temporary lock files
+~$*.xlsx
+~$*.xls
+~$*.docx
+
+# Execution logs and traces
+*.log
+*.trace
+
+# Sensitive configuration, credentials, and API tokens
+# Sesuai aturan lomba: DILARANG mengunggah API key / password / data kredensial
+.env
+*.credentials
+*.token
+*.secret
+credentials.json
+
+# Temporary data processing folders
+Data/Temp/
+Temp/
+%TEMP%/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
