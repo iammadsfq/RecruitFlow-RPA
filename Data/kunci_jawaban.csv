@@ -1,0 +1,51 @@
+id,name,email,phone,edu,exp,matched_skills,knockout,score,group,scenario,notes
+cv_001,Siti Pratama,siti.pratama@example.com,081230979246,S1,2.5,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_002,Ahmad Hidayat,ahmad.hidayat@example.com,081292199932,S1,3.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_003,Dewi Wijaya,dewi.wijaya@example.com,081252970413,S1,2.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_004,Rizky Kusuma,rizky.kusuma@example.com,081213561591,S1,2.5,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_005,Putri Saputra,putri.saputra@example.com,081210934396,S1,3.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_006,Fajar Wulandari,fajar.wulandari@example.com,081230324136,S1,2.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_007,Anisa Setiawan,anisa.setiawan@example.com,081279231728,S1,2.5,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_008,Dimas Utami,dimas.utami@example.com,081226958032,S1,3.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_009,Nurul Firmansyah,nurul.firmansyah@example.com,081247863755,S1,2.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_010,Hendro Nugroho,hendro.nugroho@example.com,081249901822,S1,2.5,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_011,Mega Rahmawati,mega.rahmawati@example.com,081260024986,S1,3.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_012,Bayu Lestari,bayu.lestari@example.com,081263855266,S1,2.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_013,Lestari Siregar,lestari.siregar@example.com,081292770217,S1,2.5,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_014,Agus Nasution,agus.nasution@example.com,081227270148,S1,3.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_015,Maya Santoso,maya.santoso@example.com,081213923345,S1,2.0,"React, Node.js, SQL, Git, TypeScript, Docker",LOLOS,95.0,SESUAI,Ideal / Memenuhi Seluruh Kriteria,"Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+cv_016,Eko Wijaya,eko.wijaya@example.com,081392035911,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_017,Dian Kusuma,dian.kusuma@example.com,081380695717,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_018,Ilham Saputra,ilham.saputra@example.com,081332389759,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_019,Tiara Wulandari,tiara.wulandari@example.com,081318463901,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_020,Budi Setiawan,budi.setiawan@example.com,081354504476,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_021,Siti Utami,siti.utami@example.com,081365991396,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_022,Ahmad Firmansyah,ahmad.firmansyah@example.com,081338373606,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_023,Dewi Nugroho,dewi.nugroho@example.com,081347368785,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_024,Rizky Rahmawati,rizky.rahmawati@example.com,081382015217,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_025,Putri Lestari,putri.lestari@example.com,081382422549,S1,1.0,"React, SQL",LOLOS,62.5,PERLU_DICEK,Batas Bawah Skor / Skill Kurang,Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek.
+cv_026,Fajar Santoso,fajar.santoso@example.com,081566886783,SMK,1.5,JavaScript,GAGAL_PENDIDIKAN,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Pendidikan SMK di bawah batas mutlak S1.
+cv_027,Anisa Pratama,anisa.pratama@example.com,081579642224,SMK,1.5,JavaScript,GAGAL_PENDIDIKAN,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Pendidikan SMK di bawah batas mutlak S1.
+cv_028,Dimas Hidayat,dimas.hidayat@example.com,081548942344,SMK,1.5,JavaScript,GAGAL_PENDIDIKAN,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Pendidikan SMK di bawah batas mutlak S1.
+cv_029,Nurul Wijaya,nurul.wijaya@example.com,081517210847,SMK,1.5,JavaScript,GAGAL_PENDIDIKAN,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Pendidikan SMK di bawah batas mutlak S1.
+cv_030,Hendro Kusuma,hendro.kusuma@example.com,081570521854,S1,0.3,JavaScript,GAGAL_PENGALAMAN,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Pengalaman 0.3 tahun di bawah syarat minimal 1.0 tahun.
+cv_031,Mega Saputra,mega.saputra@example.com,081591926451,S1,0.3,JavaScript,GAGAL_PENGALAMAN,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Pengalaman 0.3 tahun di bawah syarat minimal 1.0 tahun.
+cv_032,Bayu Wulandari,bayu.wulandari@example.com,081581520845,S1,0.3,JavaScript,GAGAL_PENGALAMAN,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Pengalaman 0.3 tahun di bawah syarat minimal 1.0 tahun.
+cv_033,Lestari Setiawan,lestari.setiawan@example.com,081569954098,S1,2.0,JavaScript,GAGAL_DOMISILI,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Domisili luar kota dan tidak bersedia relokasi.
+cv_034,Agus Utami,agus.utami@example.com,081547118039,S1,2.0,JavaScript,GAGAL_DOMISILI,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Domisili luar kota dan tidak bersedia relokasi.
+cv_035,Maya Firmansyah,maya.firmansyah@example.com,081519511854,S1,2.0,JavaScript,GAGAL_DOMISILI,35.0,TIDAK_SESUAI,Melanggar Syarat Mutlak Knockout,Domisili luar kota dan tidak bersedia relokasi.
+cv_036,CanvaLayout Eko,canva.36@example.com,081761113434,S1,2.5,"React, Node.js, SQL, Git, TypeScript",LOLOS,90.0,SESUAI,Tata Letak Modern / 2 Kolom Canva,Uji LLM/Parser membaca format 2 kolom secara kontekstual.
+cv_037,CanvaLayout Dian,canva.37@example.com,081710111740,S1,2.5,"React, Node.js, SQL, Git, TypeScript",LOLOS,90.0,SESUAI,Tata Letak Modern / 2 Kolom Canva,Uji LLM/Parser membaca format 2 kolom secara kontekstual.
+cv_038,CanvaLayout Ilham,canva.38@example.com,081761021236,S1,2.5,"React, Node.js, SQL, Git, TypeScript",LOLOS,90.0,SESUAI,Tata Letak Modern / 2 Kolom Canva,Uji LLM/Parser membaca format 2 kolom secara kontekstual.
+cv_039,CanvaLayout Tiara,canva.39@example.com,081757081118,S1,2.5,"React, Node.js, SQL, Git, TypeScript",LOLOS,90.0,SESUAI,Tata Letak Modern / 2 Kolom Canva,Uji LLM/Parser membaca format 2 kolom secara kontekstual.
+cv_040,ScannedCandidate 40,scanned.40@example.com,081818332488,S1,2.0,"React, Node.js, SQL, Git",LOLOS,85.0,SESUAI,Raster Scan Image (Fallback OCR),"Teks mentah kosong, memicu UiPath Read PDF With OCR."
+cv_041,ScannedCandidate 41,scanned.41@example.com,081873091249,S1,2.0,"React, Node.js, SQL, Git",LOLOS,85.0,SESUAI,Raster Scan Image (Fallback OCR),"Teks mentah kosong, memicu UiPath Read PDF With OCR."
+cv_042,Alex Smith 42,alex.smith42@example.com,+6281989843602,S1,2.0,"React, Node.js, SQL, Git",LOLOS,88.0,SESUAI,Bilingual / Full English CV,"Uji sinonim: Bachelor Degree=S1, PostgreSQL=SQL, NodeJS=Node.js."
+cv_043,Alex Smith 43,alex.smith43@example.com,+6281927770488,S1,2.0,"React, Node.js, SQL, Git",LOLOS,88.0,SESUAI,Bilingual / Full English CV,"Uji sinonim: Bachelor Degree=S1, PostgreSQL=SQL, NodeJS=Node.js."
+cv_044,TanpaKontak 44,KOSONG,KOSONG,S1,2.0,"React, SQL",LOLOS,58.0,PERLU_DICEK,Data Kontak Kosong,"Kontak kosong di CV, memicu aturan BR-03 (override ke Perlu Dicek)."
+cv_045,TanpaKontak 45,KOSONG,KOSONG,S1,2.0,"React, SQL",LOLOS,58.0,PERLU_DICEK,Data Kontak Kosong,"Kontak kosong di CV, memicu aturan BR-03 (override ke Perlu Dicek)."
+cv_046,TanpaKontak 46,KOSONG,KOSONG,S1,2.0,"React, SQL",LOLOS,58.0,PERLU_DICEK,Data Kontak Kosong,"Kontak kosong di CV, memicu aturan BR-03 (override ke Perlu Dicek)."
+cv_047,KORUP_FILE,N/A,N/A,N/A,0.0,None,ERROR,0.0,PERLU_DITINJAU,Berkas Korup / Rusak,"Memicu BusinessRuleException, status web bertransisi ke PERLU_DITINJAU."
+cv_048,BUKAN_CV,N/A,N/A,N/A,0.0,None,ERROR,0.0,PERLU_DITINJAU,Bukan Berkas CV (Sertifikat),"Teks tidak memuat struktur CV, memicu PERLU_DITINJAU."
+cv_049,Budi Santoso Duplikat,budi.santoso@example.com,081299990001,S1,2.0,"React, SQL",LOLOS,75.0,DUPLIKAT,Lamaran Duplikat,"Email duplikat terdeteksi sistem, memicu penanganan ramah BR-04."
+cv_050,Budi Santoso Duplikat,budi.santoso@example.com,081299990001,S1,2.0,"React, SQL",LOLOS,75.0,DUPLIKAT,Lamaran Duplikat,"Email duplikat terdeteksi sistem, memicu penanganan ramah BR-04."
