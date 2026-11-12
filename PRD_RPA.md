@@ -54,8 +54,10 @@ RecruitFlow-RPA/
   - Skill Tambahan: 20%
   - Pengalaman Kerja: 20%
   - Pendidikan Formal: 10%
+- **Pemahaman Semantik Dokumen & Generator Narasi (LLM Cognitive Unit)**:
+  Robot mengatasi bias format ATS non-standar (Canva, 2 kolom, portofolio grafis) dengan memanggil Google Gemini API (`gemini-3.8-flash` sebagai model produksi resmi aktif) via HTTP Request di UiPath. LLM mengembalikan *Structured JSON* berisi ringkasan naratif kontekstual 2–3 kalimat, verifikasi keahlian, dan estimasi pengalaman kerja. Jika terjadi kegagalan jaringan/kuota, robot otomatis *fallback* ke parser lokal dan menandai kandidat berstatus `PERLU_DICEK` (*zero crash*).
 - **Generator Ringkasan Eksekutif (Candidate Summary)**:
-  Robot merangkum profil kandidat menjadi teks naratif deterministik menggunakan teknik *Slot-Filling NLG* (tanpa LLM) pada kolom `summary`. Format menggabungkan profil pendidikan/pengalaman, keahlian wajib yang terpenuhi vs kurang, serta status knock-out dan skor kelayakan.
+  Narasi kualitatif hasil pemahaman LLM disimpan pada kolom `summary` untuk disajikan ke HR Dashboard, menghilangkan kebutuhan membaca berkas fisik secara manual.
 - **Ambang Batas Kelompok**:
   - `SESUAI` ($\ge 75$)
   - `PERLU_DICEK` ($55 \le \text{skor} < 75$, atau ada selisih data form vs CV $> 1$ tahun, atau confidence ekstraksi $< 0.6$)
@@ -100,6 +102,9 @@ RecruitFlow-RPA/
 - `RF_Sender_Email` (Text, contoh: `recruitment@example.com`).
 - `RF_Env` (Text: `DEMO` / `PROD`).
 - `RF_Email_Mode` (Text: `SMTP` / `SIMULATION`).
+- `RF_Llm_ApiKey` (Credential: Password berisi Google AI Studio API Key).
+- `RF_Llm_Model` (Text, default: `gemini-3.8-flash`, alternatif: `gemini-3.5-flash-lite`).
+- `RF_Use_LLM` (Boolean, default: `True`).
 - `RF_Max_Emails_Per_Run` (Integer: `50`).
 - `RF_Timezone` (Text: `Asia/Jakarta`).
 

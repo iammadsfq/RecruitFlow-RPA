@@ -69,6 +69,9 @@ Buat aset dan antrean berikut di UiPath Orchestrator pada folder `RecruitFlow`:
 | `RF_WhatsApp_ApiUrl`| Text | `https://api.whatsapp-gateway.mock` | Endpoint transmisi WhatsApp |
 | `RF_Env` | Text | `DEMO` | `DEMO` (kotak surat uji) / `PROD` |
 | `RF_Email_Mode` | Text | `SIMULATION` / `SMTP` | `SIMULATION` (mock log tanpa email keluar) |
+| `RF_Llm_ApiKey` | Credential / Secret | `<Google AI Studio Key>` | Kredensial rahasia Gemini API |
+| `RF_Llm_Model` | Text | `gemini-3.8-flash` | Model resmi aktif (opsi: `gemini-3.5-flash-lite`) |
+| `RF_Use_LLM` | Boolean | `True` | Flag aktivasi pemahaman semantik LLM |
 | `RF_Max_Emails_Per_Run` | Integer | `50` | Batas maksimum batch transmisi email |
 | `RF_Timezone` | Text | `Asia/Jakarta` | Zona waktu operasional (WIB) |
 
