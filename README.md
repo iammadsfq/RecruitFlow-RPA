@@ -82,6 +82,24 @@ Buat aset dan antrean berikut di UiPath Orchestrator pada folder `RecruitFlow`:
 
 ---
 
+## 📊 Dataset Uji Sintetis & Kunci Jawaban (`Data/`)
+
+Di dalam folder `Data/` tersedia 50 berkas PDF CV sintetis (`Data/Input/cv_001.pdf` s/d `cv_050.pdf`) beserta berkas label acuan **`Data/kunci_jawaban.csv`** untuk mengukur akurasi skoring robot:
+
+| Kategori Skenario Uji | Jumlah | ID Berkas | Ekspektasi Kelompok | Target Skor |
+|---|:---:|---|:---:|:---:|
+| **Memenuhi Kriteria Ideal** | 15 | `cv_001` - `cv_015` | `SESUAI` | **100.0** |
+| **Batas Bawah Skor (Skill Kurang)** | 10 | `cv_016` - `cv_025` | `PERLU_DICEK` | **67.5** |
+| **Melanggar Syarat Mutlak Knock-Out** | 10 | `cv_026` - `cv_035` | `TIDAK_SESUAI` | **13.0 - 30.0** |
+| **Layout 2 Kolom Canva Modern** | 4 | `cv_036` - `cv_039` | `SESUAI` | **90.0** |
+| **Scan Raster Gambar (Uji OCR Fallback)** | 2 | `cv_040` - `cv_041` | `SESUAI` | **80.0** |
+| **Bilingual / Full English CV** | 2 | `cv_042` - `cv_043` | `SESUAI` | **88.0** |
+| **Kontak Tidak Dicantumkan (BR-03)** | 3 | `cv_044` - `cv_046` | `PERLU_DICEK` | **55.0** |
+| **Berkas Korup & Non-CV (Exception)** | 2 | `cv_047` - `cv_048` | `PERLU_DITINJAU` | **0.0** |
+| **Lamaran Duplikat (BR-04)** | 2 | `cv_049` - `cv_050` | `DUPLIKAT` | **75.0** |
+
+---
+
 ## 🧪 Panduan Menjalankan & Menguji di Studio
 
 1. Buka folder `RecruitFlow-RPA` di UiPath Studio Desktop.
