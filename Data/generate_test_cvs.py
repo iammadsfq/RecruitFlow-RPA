@@ -168,6 +168,27 @@ def create_non_cv_document(filepath):
     ]
     doc.build(story)
 
+def calculate_exact_score(edu, exp_years, matched_req_count, matched_pref_count=0):
+    """Calculates strictly exact weighted score based on PRD formula"""
+    # 1. Pendidikan (10%)
+    if edu in ["S1", "Bachelor Degree", "D4"]:
+        edu_score = 10.0
+    elif edu in ["D3", "Diploma"]:
+        edu_score = 5.0
+    else:
+        edu_score = 0.0
+
+    # 2. Pengalaman (20%, ideal = 2.0 tahun)
+    exp_score = min(exp_years / 2.0, 1.0) * 20.0
+
+    # 3. Skill Wajib (50%, total 4 skill)
+    req_score = (matched_req_count / 4.0) * 50.0
+
+    # 4. Skill Tambahan (20%, total 2 skill)
+    pref_score = (matched_pref_count / 2.0) * 20.0
+
+    return round(edu_score + exp_score + req_score + pref_score, 1)
+
 # Main Generation Routine
 cv_records = []
 
@@ -188,11 +209,12 @@ for i in range(1, 16):
     skills = ["React", "Node.js", "SQL", "Git", "TypeScript", "Docker"]
     filepath = os.path.join(OUTPUT_DIR, f"{cid}.pdf")
     create_standard_cv(filepath, name, email, phone, city, edu, edu_major, exp, jobs, skills)
+    exact_score = calculate_exact_score(edu, exp, 4, 2) # 100.0
     cv_records.append({
         "id": cid, "name": name, "email": email, "phone": phone, "edu": edu, "exp": exp,
         "matched_skills": "React, Node.js, SQL, Git, TypeScript, Docker",
-        "knockout": "LOLOS", "score": 95.0, "group": "SESUAI",
-        "scenario": "Ideal / Memenuhi Seluruh Kriteria", "notes": "Lolos 4 knockout, menguasai seluruh skill wajib & tambahan."
+        "knockout": "LOLOS", "score": exact_score, "group": "SESUAI",
+        "scenario": "Ideal / Memenuhi Seluruh Kriteria", "notes": "Lolos 4 knockout, menguasai 4 skill wajib dan 2 skill tambahan."
     })
 
 # Skenario 2: 10 CV Batas Bawah / Perlu Dicek (Skor 55-74)
@@ -204,18 +226,19 @@ for i in range(16, 26):
     city = CITIES_JABODETABEK[i % len(CITIES_JABODETABEK)]
     edu = "S1"
     edu_major = "Sistem Informasi"
-    exp = 1.0  # batas bawah
+    exp = 1.0  # 1.0 thn -> exp_score = 10.0
     jobs = [
-        {"title": "Junior Programmer", "company": "PT Mitra Informatika", "period": "Jan 2025 - Sekarang", "desc": "Membantu pembuatan aplikasi web internal dengan React dan SQL."}
+        {"title": "Junior Programmer", "company": "PT Mitra Informatika", "period": "Jan 2025 - Sekarang", "desc": "Membantu pembuatan aplikasi web internal dengan React, SQL, dan Git."}
     ]
-    skills = ["React", "SQL", "HTML/CSS"] # Kurang Node.js & Git
+    skills = ["React", "SQL", "Git", "TypeScript"] # 3 skill wajib (37.5) + 1 skill tambahan (10.0)
     filepath = os.path.join(OUTPUT_DIR, f"{cid}.pdf")
     create_standard_cv(filepath, name, email, phone, city, edu, edu_major, exp, jobs, skills)
+    exact_score = calculate_exact_score(edu, exp, 3, 1) # 10.0 + 10.0 + 37.5 + 10.0 = 67.5
     cv_records.append({
         "id": cid, "name": name, "email": email, "phone": phone, "edu": edu, "exp": exp,
-        "matched_skills": "React, SQL",
-        "knockout": "LOLOS", "score": 62.5, "group": "PERLU_DICEK",
-        "scenario": "Batas Bawah Skor / Skill Kurang", "notes": "Hanya memenuhi 2 dari 4 skill wajib. Masuk tab Perlu Dicek."
+        "matched_skills": "React, SQL, Git, TypeScript",
+        "knockout": "LOLOS", "score": exact_score, "group": "PERLU_DICEK",
+        "scenario": "Batas Bawah Skor / Skill Kurang", "notes": "Skor 67.5 (rentang 55-74). Lolos knockout tapi butuh verifikasi manual HR."
     })
 
 # Skenario 3: 10 CV Gagal Knockout (Tidak Sesuai)
@@ -233,6 +256,7 @@ for i in range(26, 36):
         exp = 1.5
         knockout_reason = "GAGAL_PENDIDIKAN"
         notes = "Pendidikan SMK di bawah batas mutlak S1."
+        exact_score = calculate_exact_score(edu, exp, 0, 0) # 0 + 15 = 15.0
     elif i < 33: # Gagal Pengalaman
         city = "Depok"
         edu = "S1"
@@ -240,6 +264,7 @@ for i in range(26, 36):
         exp = 0.3
         knockout_reason = "GAGAL_PENGALAMAN"
         notes = "Pengalaman 0.3 tahun di bawah syarat minimal 1.0 tahun."
+        exact_score = calculate_exact_score(edu, exp, 0, 0) # 10 + 3 = 13.0
     else: # Gagal Domisili
         city = "Surabaya"
         edu = "S1"
@@ -247,6 +272,7 @@ for i in range(26, 36):
         exp = 2.0
         knockout_reason = "GAGAL_DOMISILI"
         notes = "Domisili luar kota dan tidak bersedia relokasi."
+        exact_score = calculate_exact_score(edu, exp, 0, 0) # 10 + 20 = 30.0
         
     jobs = [{"title": "Web Staff", "company": "CV Usaha Mandiri", "period": "2024", "desc": "Desain antarmuka web dan HTML."}]
     skills = ["HTML", "CSS", "JavaScript"]
@@ -254,8 +280,8 @@ for i in range(26, 36):
     create_standard_cv(filepath, name, email, phone, city, edu, edu_major, exp, jobs, skills)
     cv_records.append({
         "id": cid, "name": name, "email": email, "phone": phone, "edu": edu, "exp": exp,
-        "matched_skills": "JavaScript",
-        "knockout": knockout_reason, "score": 35.0, "group": "TIDAK_SESUAI",
+        "matched_skills": "None",
+        "knockout": knockout_reason, "score": exact_score, "group": "TIDAK_SESUAI",
         "scenario": "Melanggar Syarat Mutlak Knockout", "notes": notes
     })
 
