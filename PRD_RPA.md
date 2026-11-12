@@ -55,7 +55,7 @@ RecruitFlow-RPA/
   - Pengalaman Kerja: 20%
   - Pendidikan Formal: 10%
 - **Generator Ringkasan Eksekutif (Candidate Summary)**:
-  Robot merangkum profil kandidat menjadi 2–3 kalimat padat pada kolom `summary` agar HR di dashboard cukup membaca intinya tanpa membuka dokumen fisik.
+  Robot merangkum profil kandidat menjadi teks naratif deterministik menggunakan teknik *Slot-Filling NLG* (tanpa LLM) pada kolom `summary`. Format menggabungkan profil pendidikan/pengalaman, keahlian wajib yang terpenuhi vs kurang, serta status knock-out dan skor kelayakan.
 - **Ambang Batas Kelompok**:
   - `SESUAI` ($\ge 75$)
   - `PERLU_DICEK` ($55 \le \text{skor} < 75$, atau ada selisih data form vs CV $> 1$ tahun, atau confidence ekstraksi $< 0.6$)
