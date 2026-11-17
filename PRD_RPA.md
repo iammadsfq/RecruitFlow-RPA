@@ -65,7 +65,7 @@ RecruitFlow-RPA/
 
 ### Modul 2: `Main_Messaging.xaml`
 - **Pematuhan Mutlak Human-in-the-Lead (BR-01)**:
-  Robot hanya mengambil pesan `PENDING` yang telah disetujui HR via status `DISETUJUI_UNDANG` atau `DISETUJUI_TOLAK`.
+  Robot hanya mengambil pesan `PENDING` yang telah disetujui pihak berwenang (HR dan/atau *Hiring User* sesuai `approval_mode` posisi) via status final `DISETUJUI_UNDANG` atau `DISETUJUI_TOLAK`.
 - **Anti-Duplikasi (Idempotensi BR-09)**:
   Klaim pesan via `POST /robot/messages/{id}/claim` mengunci status menjadi `SENDING`.
 - **Multi-Kanal**:
@@ -87,7 +87,7 @@ RecruitFlow-RPA/
 
 ### Modul 4: `Main_Reporting.xaml`
 - **Jadwal Eksekusi**: Harian pukul 17:00 WIB.
-- **Laporan Excel Modern**: Mengisi template multi-sheet (`Executive Summary`, `Performa Lowongan`, `Daftar Pengecualian`) menggunakan *Modern Excel Activities*.
+- **Laporan Excel Modern (Pasca-Seleksi)**: Mengisi template multi-sheet (`Executive Summary`, `Performa Lowongan`, `Daftar Pengecualian`) menggunakan *Modern Excel Activities* sebagai laporan eksekutif manajemen (pemilihan kandidat tetap dilakukan langsung melalui dasbor).
 - **Housekeeping**: Menghapus berkas unduhan PDF di `Data/Temp/` yang berusia $> 7$ hari.
 
 ---
