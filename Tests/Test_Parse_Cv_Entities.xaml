@@ -1,0 +1,60 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Test_Parse_Cv_Entities" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:uta="clr-namespace:UiPath.Testing.Activities;assembly=UiPath.Testing.Activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="32">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Testing.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="32">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Testing.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Test Case Otomatis: Memvalidasi ekstraksi entitas &amp; sinonim pada Parse_Cv_Entities.xaml serta penyamaran PII pada Mask_Pii.xaml." DisplayName="Test_Parse_Cv_Entities" sap:VirtualizedContainerService.HintSize="512,680" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Name="eduOut" />
+      <Variable x:TypeArguments="x:Double" Name="expOut" />
+      <Variable x:TypeArguments="x:Int32" Name="reqCount" />
+      <Variable x:TypeArguments="x:Int32" Name="prefCount" />
+      <Variable x:TypeArguments="x:Boolean" Name="koFailed" />
+      <Variable x:TypeArguments="x:String" Name="koReason" />
+      <Variable x:TypeArguments="x:String" Name="summaryText" />
+      <Variable x:TypeArguments="x:String" Name="parsedJson" />
+      <Variable x:TypeArguments="x:String" Name="masked" />
+    </Sequence.Variables>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Test Parse CV With Synonyms" sap:VirtualizedContainerService.HintSize="450,145" sap2010:WorkflowViewState.IdRef="Invoke_Parse" UnSafe="False" WorkflowFileName="Workflows\CV_Screening\Parse_Cv_Entities.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_RawText">S1 Teknik Informatika. Pengalaman 2.5 tahun sebagai Fullstack Developer menggunakan ReactJS, Express, PostgreSQL, GitHub, TS, dan Docker.</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_AppJson">{"city":"Jakarta Selatan"}</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_CriteriaJson">{"knockout":{"min_education":"S1","min_experience_years":1.0,"allowed_cities":["Jakarta","Depok"]},"required_skills":["React","Node.js","SQL","Git"],"preferred_skills":["Docker","TypeScript"],"synonyms":{"React":["ReactJS"],"Node.js":["Express"],"SQL":["PostgreSQL"],"Git":["GitHub"],"TypeScript":["TS"]}}</InArgument>
+        <InArgument x:TypeArguments="x:Boolean" x:Key="in_UseLlm">[False]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_LlmApiKey">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_LlmModel">gemini-2.5-flash</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_Education">[eduOut]</OutArgument>
+        <OutArgument x:TypeArguments="x:Double" x:Key="out_ExperienceYears">[expOut]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_MatchedReqCount">[reqCount]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_MatchedPrefCount">[prefCount]</OutArgument>
+        <OutArgument x:TypeArguments="x:Boolean" x:Key="out_IsKnockoutFailed">[koFailed]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_KnockoutReason">[koReason]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_Summary">[summaryText]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ParsedDataJson">[parsedJson]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <uta:VerifyExpression AlternativeVerificationTitle="{x:Null}" KeepScreenshots="{x:Null}" OutputMessageFormat="{x:Null}" Result="{x:Null}" ScreenshotsPath="{x:Null}" ContinueOnFailure="True" DisplayName="Verify Synonyms &amp; Entities" Expression="[eduOut.Equals(&quot;S1&quot;) AndAlso expOut = 2.5 AndAlso reqCount = 4 AndAlso prefCount = 2 AndAlso Not koFailed]" sap:VirtualizedContainerService.HintSize="450,122" sap2010:WorkflowViewState.IdRef="Verify_Parse" TakeScreenshotInCaseOfFailingAssertion="False" TakeScreenshotInCaseOfSucceedingAssertion="False" />
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Test Mask PII" sap:VirtualizedContainerService.HintSize="450,145" sap2010:WorkflowViewState.IdRef="Invoke_Mask" UnSafe="False" WorkflowFileName="Workflows\Common\Mask_Pii.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_RawText">Email: budi@example.com Telp: 081234567890</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_MaskedText">[masked]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <uta:VerifyExpression AlternativeVerificationTitle="{x:Null}" KeepScreenshots="{x:Null}" OutputMessageFormat="{x:Null}" Result="{x:Null}" ScreenshotsPath="{x:Null}" ContinueOnFailure="True" DisplayName="Verify PII Masked" Expression="[Not masked.Contains(&quot;budi@example.com&quot;) AndAlso Not masked.Contains(&quot;081234567890&quot;) AndAlso masked.Contains(&quot;***&quot;)]" sap:VirtualizedContainerService.HintSize="450,122" sap2010:WorkflowViewState.IdRef="Verify_Mask" TakeScreenshotInCaseOfFailingAssertion="False" TakeScreenshotInCaseOfSucceedingAssertion="False" />
+  </Sequence>
+</Activity>

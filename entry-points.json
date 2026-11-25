@@ -1,0 +1,76 @@
+{
+  "$schema": "https://cloud.uipath.com/draft/2024-12/entry-point",
+  "entryPoints": [
+    {
+      "filePath": "Main_CV_Screening.xaml",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000001",
+      "type": "process",
+      "input": {
+        "type": "object",
+        "properties": {
+          "in_ApiBaseUrl": {
+            "type": "string"
+          },
+          "in_ApiToken": {
+            "type": "string"
+          },
+          "in_LlmApiKey": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "filePath": "Main_Messaging.xaml",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000002",
+      "type": "process",
+      "input": {
+        "type": "object",
+        "properties": {
+          "in_ApiBaseUrl": {
+            "type": "string"
+          },
+          "in_ApiToken": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "filePath": "Main_Reporting.xaml",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000004",
+      "type": "process",
+      "input": {
+        "type": "object",
+        "properties": {
+          "in_ApiBaseUrl": {
+            "type": "string"
+          },
+          "in_ApiToken": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    },
+    {
+      "filePath": "Main_Scheduling.xaml",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000003",
+      "type": "process",
+      "input": {
+        "type": "object",
+        "properties": {
+          "in_ApiBaseUrl": {
+            "type": "string"
+          },
+          "in_ApiToken": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    }
+  ]
+}

@@ -1,13 +1,78 @@
 <Activity mc:Ignorable="sap sap2010" x:Class="Api_Request" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:Members>
+    <x:Property Name="in_BaseUrl" Type="InArgument(x:String)" />
+    <x:Property Name="in_ApiToken" Type="InArgument(x:String)" />
     <x:Property Name="in_Endpoint" Type="InArgument(x:String)" />
     <x:Property Name="in_Method" Type="InArgument(x:String)" />
     <x:Property Name="in_PayloadJson" Type="InArgument(x:String)" />
+    <x:Property Name="in_DownloadPath" Type="InArgument(x:String)" />
     <x:Property Name="out_ResponseJson" Type="OutArgument(x:String)" />
     <x:Property Name="out_StatusCode" Type="OutArgument(x:Int32)" />
   </x:Members>
-  <Sequence sap2010:Annotation.AnnotationText="Wrapper HTTP Request terstandarisasi dengan Bearer Token dan penanganan kode status 2xx/4xx/5xx." DisplayName="Api_Request" sap:VirtualizedContainerService.HintSize="450,450" sap2010:WorkflowViewState.IdRef="Sequence_1">
-    <ui:LogMessage DisplayName="Log API Call" sap:VirtualizedContainerService.HintSize="388,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Trace" Message="[String.Format(&quot;[API] {0} {1}&quot;, in_Method, in_Endpoint)]" />
-    <ui:Comment DisplayName="HTTP Activity Placeholder Note" sap:VirtualizedContainerService.HintSize="388,115" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Tempatkan UiPath.WebAPI.Activities.HttpClient di sini:&#xA;// Header: Authorization: Bearer {RF_Api_Token}&#xA;// Header: Content-Type: application/json&#xA;// Output: out_ResponseJson, out_StatusCode" />
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="36">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Web</x:String>
+      <x:String>UiPath.Web.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="36">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Web</AssemblyReference>
+      <AssemblyReference>UiPath.Web.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Wrapper HTTP Request terstandarisasi untuk berkomunikasi dengan RecruitFlow-Platform REST API (/robot/*) menggunakan Bearer Token dan dukungan unduhan biner." DisplayName="Api_Request" sap:VirtualizedContainerService.HintSize="540,680" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Name="fullUrl" />
+      <Variable x:TypeArguments="x:String" Name="methodUpper" />
+    </Sequence.Variables>
+    <Assign DisplayName="Build Full URL" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Url">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[fullUrl]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[in_BaseUrl.TrimEnd("/"c) &amp; "/" &amp; in_Endpoint.TrimStart("/"c)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Normalize Method" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Method">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[methodUpper]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(String.IsNullOrEmpty(in_Method), "GET", in_Method.ToUpper().Trim())]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:LogMessage DisplayName="Log API Call" sap:VirtualizedContainerService.HintSize="478,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Trace" Message="[String.Format(&quot;[API] {0} {1}&quot;, methodUpper, fullUrl)]" />
+    <If Condition="[methodUpper.Equals(&quot;POST&quot;)]" DisplayName="Dispatch GET or POST" sap:VirtualizedContainerService.HintSize="478,280" sap2010:WorkflowViewState.IdRef="If_Method">
+      <If.Then>
+        <ui:HttpClient Body="[If(String.IsNullOrEmpty(in_PayloadJson), &quot;{}&quot;, in_PayloadJson)]" BodyFormat="application/json" ClientCertificate="{x:Null}" ClientCertificatePassword="{x:Null}" ConsumerKey="{x:Null}" ConsumerSecret="{x:Null}" ContinueOnError="True" FileAttachments="{x:Null}" OAuth1Token="{x:Null}" OAuth1TokenSecret="{x:Null}" OAuth2Token="{x:Null}" Password="{x:Null}" ResourcePath="{x:Null}" ResponseAttachment="{x:Null}" ResponseHeaders="{x:Null}" SecureClientCertificatePassword="{x:Null}" SecurePassword="{x:Null}" Username="{x:Null}" AcceptFormat="JSON" DisplayName="HTTP POST Request" EnableSSLVerification="True" EndPoint="[fullUrl]" sap:VirtualizedContainerService.HintSize="334,102" sap2010:WorkflowViewState.IdRef="HttpClient_Post" Method="POST" Result="[out_ResponseJson]" StatusCode="[out_StatusCode]" TimeoutMS="15000">
+          <ui:HttpClient.Headers>
+            <InArgument x:TypeArguments="x:String" x:Key="Authorization">["Bearer " &amp; in_ApiToken]</InArgument>
+            <InArgument x:TypeArguments="x:String" x:Key="Content-Type">application/json</InArgument>
+          </ui:HttpClient.Headers>
+        </ui:HttpClient>
+      </If.Then>
+      <If.Else>
+        <ui:HttpClient Body="{x:Null}" BodyFormat="application/json" ClientCertificate="{x:Null}" ClientCertificatePassword="{x:Null}" ConsumerKey="{x:Null}" ConsumerSecret="{x:Null}" ContinueOnError="True" FileAttachments="{x:Null}" OAuth1Token="{x:Null}" OAuth1TokenSecret="{x:Null}" OAuth2Token="{x:Null}" Password="{x:Null}" ResponseAttachment="{x:Null}" ResponseHeaders="{x:Null}" SecureClientCertificatePassword="{x:Null}" SecurePassword="{x:Null}" Username="{x:Null}" AcceptFormat="ANY" DisplayName="HTTP GET Request" EnableSSLVerification="True" EndPoint="[fullUrl]" sap:VirtualizedContainerService.HintSize="334,102" sap2010:WorkflowViewState.IdRef="HttpClient_Get" Method="GET" ResourcePath="[in_DownloadPath]" Result="[out_ResponseJson]" StatusCode="[out_StatusCode]" TimeoutMS="15000">
+          <ui:HttpClient.Headers>
+            <InArgument x:TypeArguments="x:String" x:Key="Authorization">["Bearer " &amp; in_ApiToken]</InArgument>
+          </ui:HttpClient.Headers>
+        </ui:HttpClient>
+      </If.Else>
+    </If>
+    <If Condition="[out_StatusCode &gt;= 400 OrElse out_StatusCode = 0]" DisplayName="Log API Error Status" sap:VirtualizedContainerService.HintSize="478,200" sap2010:WorkflowViewState.IdRef="If_ErrLog">
+      <If.Then>
+        <ui:LogMessage DisplayName="Log API Failure" sap:VirtualizedContainerService.HintSize="334,143" sap2010:WorkflowViewState.IdRef="LogMessage_Err" Level="Warn" Message="[String.Format(&quot;[API WARN] {0} {1} -&gt; HTTP {2} | {3}&quot;, methodUpper, in_Endpoint, out_StatusCode, out_ResponseJson)]" />
+      </If.Then>
+    </If>
   </Sequence>
 </Activity>

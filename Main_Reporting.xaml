@@ -1,26 +1,178 @@
-<Activity mc:Ignorable="sap sap2010" x:Class="Main_Reporting" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="Main_Reporting" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_ApiBaseUrl" Type="InArgument(x:String)" />
+    <x:Property Name="in_ApiToken" Type="InArgument(x:String)" />
+  </x:Members>
   <TextExpression.NamespacesForImplementation>
-    <scg:List x:TypeArguments="x:String" Capacity="42">
+    <scg:List x:TypeArguments="x:String" Capacity="40">
       <x:String>System.Activities</x:String>
       <x:String>System.Activities.Statements</x:String>
       <x:String>System</x:String>
       <x:String>System.Collections</x:String>
       <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>System.IO</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
       <x:String>UiPath.Core</x:String>
       <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Excel</x:String>
+      <x:String>UiPath.Excel.Activities</x:String>
     </scg:List>
   </TextExpression.NamespacesForImplementation>
   <TextExpression.ReferencesForImplementation>
-    <scg:List x:TypeArguments="AssemblyReference" Capacity="38">
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="40">
       <AssemblyReference>System.Activities</AssemblyReference>
       <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>System.Data.Common</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
       <AssemblyReference>UiPath.System.Activities</AssemblyReference>
-      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Excel.Activities</AssemblyReference>
     </scg:List>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap2010:Annotation.AnnotationText="Entry Point 4: Pembuatan Laporan Eksekutif Berkala (Excel Modern), Pengiriman Email Laporan Harian ke HR Management, dan Pembersihan Berkas Sementara (Housekeeping)." DisplayName="Main_Reporting" sap:VirtualizedContainerService.HintSize="512,680" sap2010:WorkflowViewState.IdRef="Sequence_1">
-    <ui:LogMessage DisplayName="Log Start Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;[RF_Reporting] Memulai kompilasi laporan harian eksekutif dan housekeeping...&quot;]" />
-    <ui:Comment DisplayName="Architecture Documentation Note" sap:VirtualizedContainerService.HintSize="450,115" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Langkah Alur Kerja:&#xA;// 1. Ambil data agregat corong rekrutmen via GET /robot/reports/daily.&#xA;// 2. Tulis tabel ringkasan, breakdown lowongan, dan daftar kandidat status PERLU_DITINJAU ke Excel.&#xA;// 3. Kirim berkas Excel lampiran ke email HR Manager.&#xA;// 4. Housekeeping: Hapus berkas unduhan CV di Data/Temp/ yang berusia lebih dari 7 hari." />
-    <ui:LogMessage DisplayName="Log End Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[&quot;[RF_Reporting] Laporan harian berhasil diterbitkan dan berkas sementara dibersihkan.&quot;]" />
+  <Sequence sap2010:Annotation.AnnotationText="Entry Point 4: Kompilasi Laporan Harian Eksekutif ke Excel (GET /robot/reports/daily), Konfirmasi ke Backend, dan Housekeeping berkas Temp &gt; 7 hari." DisplayName="Main_Reporting" sap:VirtualizedContainerService.HintSize="580,1280" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Default="RF_Reporting" Name="processName" />
+      <Variable x:TypeArguments="scg:Dictionary(x:String, x:Object)" Name="cfg" />
+      <Variable x:TypeArguments="x:String" Name="baseUrl" />
+      <Variable x:TypeArguments="x:String" Name="apiToken" />
+      <Variable x:TypeArguments="x:String" Name="reportResp" />
+      <Variable x:TypeArguments="x:Int32" Name="reportStatus" />
+      <Variable x:TypeArguments="njl:JObject" Name="repObj" />
+      <Variable x:TypeArguments="sd:DataTable" Name="dtSummary" />
+      <Variable x:TypeArguments="x:String" Name="outDir" />
+      <Variable x:TypeArguments="x:String" Name="outFile" />
+      <Variable x:TypeArguments="x:String" Name="tempDir" />
+      <Variable x:TypeArguments="x:String" Name="hbResp" />
+      <Variable x:TypeArguments="x:Int32" Name="hbStatus" />
+    </Sequence.Variables>
+    <ui:LogMessage DisplayName="Log Start Process" sap:VirtualizedContainerService.HintSize="518,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;[RF_Reporting] Memulai kompilasi laporan harian eksekutif dan housekeeping...&quot;]" />
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Load Config" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_LoadCfg" UnSafe="False" WorkflowFileName="Workflows\Common\Load_Config.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ConfigFile">Data\Config\Config.xlsx</InArgument>
+        <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:Object)" x:Key="out_Config">[cfg]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <Assign DisplayName="Set BaseUrl" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Base">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[baseUrl]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Not String.IsNullOrWhiteSpace(in_ApiBaseUrl), in_ApiBaseUrl, cfg("RF_Api_BaseUrl").ToString())]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set ApiToken" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Tok">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[apiToken]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Not String.IsNullOrWhiteSpace(in_ApiToken), in_ApiToken, cfg("RF_Api_Token").ToString())]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set Output And Temp Dirs" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Dirs">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[outDir]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[cfg("RF_Report_Dir").ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set TempDir" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Tmp">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[tempDir]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[cfg("RF_Temp_Dir").ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:CreateDirectory ContinueOnError="True" DisplayName="Ensure Output Directory" sap:VirtualizedContainerService.HintSize="518,112" sap2010:WorkflowViewState.IdRef="CreateDir_Out" Path="[outDir]" />
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="GET Daily Report Metrics" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_GetRep" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/reports/daily</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">GET</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[reportResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[reportStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <If Condition="[reportStatus = 200 AndAlso Not String.IsNullOrWhiteSpace(reportResp)]" DisplayName="Build Excel Report" sap:VirtualizedContainerService.HintSize="518,520" sap2010:WorkflowViewState.IdRef="If_RepOk">
+      <If.Then>
+        <Sequence DisplayName="Populate And Save Excel" sap:VirtualizedContainerService.HintSize="480,440" sap2010:WorkflowViewState.IdRef="Sequence_Excel">
+          <Assign DisplayName="Parse Report JSON" sap:VirtualizedContainerService.HintSize="440,82" sap2010:WorkflowViewState.IdRef="Assign_RepObj">
+            <Assign.To>
+              <OutArgument x:TypeArguments="njl:JObject">[repObj]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="njl:JObject">[JObject.Parse(reportResp)]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <Assign DisplayName="Build Summary DataTable" sap:VirtualizedContainerService.HintSize="440,82" sap2010:WorkflowViewState.IdRef="Assign_Dt">
+            <Assign.To>
+              <OutArgument x:TypeArguments="sd:DataTable">[dtSummary]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="sd:DataTable">[New DataTable()]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <InvokeMethod DisplayName="Add Metric Column" sap:VirtualizedContainerService.HintSize="440,136" sap2010:WorkflowViewState.IdRef="InvokeMethod_Col1" MethodName="Add">
+            <InvokeMethod.TargetObject>
+              <InArgument x:TypeArguments="sd:DataColumnCollection">[dtSummary.Columns]</InArgument>
+            </InvokeMethod.TargetObject>
+            <InArgument x:TypeArguments="x:String">Metrik</InArgument>
+          </InvokeMethod>
+          <InvokeMethod DisplayName="Add Value Column" sap:VirtualizedContainerService.HintSize="440,136" sap2010:WorkflowViewState.IdRef="InvokeMethod_Col2" MethodName="Add">
+            <InvokeMethod.TargetObject>
+              <InArgument x:TypeArguments="sd:DataColumnCollection">[dtSummary.Columns]</InArgument>
+            </InvokeMethod.TargetObject>
+            <InArgument x:TypeArguments="x:String">Nilai</InArgument>
+          </InvokeMethod>
+          <ui:AddDataRow DataRow="{x:Null}" ArrayRow="[{&quot;Tanggal Laporan&quot;, DateTime.Now.ToString(&quot;yyyy-MM-dd HH:mm&quot;)}]" DataTable="[dtSummary]" DisplayName="Add Row Date" sap:VirtualizedContainerService.HintSize="440,112" sap2010:WorkflowViewState.IdRef="AddDataRow_1" />
+          <ui:AddDataRow DataRow="{x:Null}" ArrayRow="[{&quot;Total Lamaran&quot;, repObj(&quot;total_applications&quot;).ToString()}]" DataTable="[dtSummary]" DisplayName="Add Row Total" sap:VirtualizedContainerService.HintSize="440,112" sap2010:WorkflowViewState.IdRef="AddDataRow_2" />
+          <ui:AddDataRow DataRow="{x:Null}" ArrayRow="[{&quot;Wawancara Terkonfirmasi&quot;, repObj(&quot;confirmed_interviews&quot;).ToString()}]" DataTable="[dtSummary]" DisplayName="Add Row Confirmed" sap:VirtualizedContainerService.HintSize="440,112" sap2010:WorkflowViewState.IdRef="AddDataRow_3" />
+          <Assign DisplayName="Resolve Output Path" sap:VirtualizedContainerService.HintSize="440,82" sap2010:WorkflowViewState.IdRef="Assign_OutFile">
+            <Assign.To>
+              <OutArgument x:TypeArguments="x:String">[outFile]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="x:String">[Path.Combine(outDir, String.Format("RecruitFlow_Daily_Report_{0}.xlsx", DateTime.Now.ToString("yyyyMMdd")))]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <ui:WriteRange StartingCell="{x:Null}" AddHeaders="True" DataTable="[dtSummary]" DisplayName="Write Executive Summary Sheet" sap:VirtualizedContainerService.HintSize="440,140" sap2010:WorkflowViewState.IdRef="WriteRange_1" SheetName="Executive Summary" WorkbookPath="[outFile]" />
+          <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="POST Report Confirmation" sap:VirtualizedContainerService.HintSize="440,145" sap2010:WorkflowViewState.IdRef="Invoke_PostRep" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+            <ui:InvokeWorkflowFile.Arguments>
+              <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/reports</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[New JObject(New JProperty("file", outFile)).ToString()]</InArgument>
+              <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+              <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[hbResp]</OutArgument>
+              <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[hbStatus]</OutArgument>
+            </ui:InvokeWorkflowFile.Arguments>
+          </ui:InvokeWorkflowFile>
+        </Sequence>
+      </If.Then>
+    </If>
+    <If Condition="[Directory.Exists(tempDir)]" DisplayName="Housekeeping Temp PDFs &gt; 7 Days" sap:VirtualizedContainerService.HintSize="518,320" sap2010:WorkflowViewState.IdRef="If_TempExists">
+      <If.Then>
+        <ui:ForEach x:TypeArguments="x:String" CurrentIndex="{x:Null}" DisplayName="Delete Expired Temp Files" sap:VirtualizedContainerService.HintSize="440,240" sap2010:WorkflowViewState.IdRef="ForEach_Temp" Values="[Directory.GetFiles(tempDir, &quot;*.pdf&quot;)]">
+          <ui:ForEach.Body>
+            <ActivityAction x:TypeArguments="x:String">
+              <ActivityAction.Argument>
+                <DelegateInArgument x:TypeArguments="x:String" Name="f" />
+              </ActivityAction.Argument>
+              <If Condition="[File.GetLastWriteTimeUtc(f) &lt; DateTime.UtcNow.AddDays(-7)]" DisplayName="Check File Age" sap:VirtualizedContainerService.HintSize="380,160" sap2010:WorkflowViewState.IdRef="If_Old">
+                <If.Then>
+                  <ui:DeleteFileX DisplayName="Delete Old Temp PDF" sap:VirtualizedContainerService.HintSize="334,112" sap2010:WorkflowViewState.IdRef="DeleteFileX_1" Path="[f]" />
+                </If.Then>
+              </If>
+            </ActivityAction>
+          </ui:ForEach.Body>
+        </ui:ForEach>
+      </If.Then>
+    </If>
+    <ui:LogMessage DisplayName="Log End Process" sap:VirtualizedContainerService.HintSize="518,143" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[&quot;[RF_Reporting] Laporan harian berhasil diterbitkan dan berkas sementara dibersihkan.&quot;]" />
   </Sequence>
 </Activity>

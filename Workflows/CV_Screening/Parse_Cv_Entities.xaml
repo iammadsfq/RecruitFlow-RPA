@@ -1,0 +1,232 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Parse_Cv_Entities" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:str="clr-namespace:System.Text.RegularExpressions;assembly=System.Text.RegularExpressions" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_RawText" Type="InArgument(x:String)" />
+    <x:Property Name="in_AppJson" Type="InArgument(x:String)" />
+    <x:Property Name="in_CriteriaJson" Type="InArgument(x:String)" />
+    <x:Property Name="in_UseLlm" Type="InArgument(x:Boolean)" />
+    <x:Property Name="in_LlmApiKey" Type="InArgument(x:String)" />
+    <x:Property Name="in_LlmModel" Type="InArgument(x:String)" />
+    <x:Property Name="out_Education" Type="OutArgument(x:String)" />
+    <x:Property Name="out_ExperienceYears" Type="OutArgument(x:Double)" />
+    <x:Property Name="out_MatchedReqCount" Type="OutArgument(x:Int32)" />
+    <x:Property Name="out_MatchedPrefCount" Type="OutArgument(x:Int32)" />
+    <x:Property Name="out_IsKnockoutFailed" Type="OutArgument(x:Boolean)" />
+    <x:Property Name="out_KnockoutReason" Type="OutArgument(x:String)" />
+    <x:Property Name="out_Summary" Type="OutArgument(x:String)" />
+    <x:Property Name="out_ParsedDataJson" Type="OutArgument(x:String)" />
+  </x:Members>
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="40">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Linq</x:String>
+      <x:String>System.Text.RegularExpressions</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Web</x:String>
+      <x:String>UiPath.Web.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="40">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>System.Linq</AssemblyReference>
+      <AssemblyReference>System.Text.RegularExpressions</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Web.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Mengekstrak entitas pendidikan, pengalaman kerja, kecocokan skill + kamus sinonim, dan 4 syarat knock-out dari teks CV, dengan dukungan opsional Gemini LLM dan fallback parser lokal." DisplayName="Parse_Cv_Entities" sap:VirtualizedContainerService.HintSize="580,1080" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Name="lowerText" />
+      <Variable x:TypeArguments="njl:JObject" Name="critObj" />
+      <Variable x:TypeArguments="njl:JObject" Name="appObj" />
+      <Variable x:TypeArguments="x:String" Name="appCity" />
+      <Variable x:TypeArguments="x:Double" Name="minExp" />
+      <Variable x:TypeArguments="x:String" Name="minEdu" />
+      <Variable x:TypeArguments="x:Boolean" Name="cityAllowed" />
+      <Variable x:TypeArguments="scg:List(x:String)" Name="matchedSkills" />
+      <Variable x:TypeArguments="x:String" Name="llmResp" />
+      <Variable x:TypeArguments="x:Int32" Name="llmStatus" />
+      <Variable x:TypeArguments="x:String" Name="llmBody" />
+    </Sequence.Variables>
+    <Assign DisplayName="Normalize Text" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Lower">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[lowerText]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(in_RawText, "").ToLowerInvariant()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Parse Criteria JSON" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Crit">
+      <Assign.To>
+        <OutArgument x:TypeArguments="njl:JObject">[critObj]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="njl:JObject">[If(String.IsNullOrWhiteSpace(in_CriteriaJson), New JObject(), JObject.Parse(in_CriteriaJson))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Parse App JSON" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_App">
+      <Assign.To>
+        <OutArgument x:TypeArguments="njl:JObject">[appObj]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="njl:JObject">[If(String.IsNullOrWhiteSpace(in_AppJson), New JObject(), JObject.Parse(in_AppJson))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Detect Education" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Edu">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[out_Education]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Regex.IsMatch(lowerText, "\b(s2|magister|master)\b"), "S2", If(Regex.IsMatch(lowerText, "\b(s1|sarjana|bachelor|d4|teknik informatika|ilmu komputer)\b"), "S1", If(Regex.IsMatch(lowerText, "\b(d3|diploma)\b"), "D3", If(Regex.IsMatch(lowerText, "\b(sma|smk|sederajat)\b"), "SMA", If(appObj("education") IsNot Nothing, appObj("education").ToString(), "SMA")))))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Detect Experience Years" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Exp">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Double">[out_ExperienceYears]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Double">[If(Regex.IsMatch(lowerText, "(\d+(?:[\.,]\d+)?)\s*(tahun|thn|years|yrs)"), Double.Parse(Regex.Match(lowerText, "(\d+(?:[\.,]\d+)?)\s*(tahun|thn|years|yrs)").Groups(1).Value.Replace(",", "."), System.Globalization.CultureInfo.InvariantCulture), If(appObj("experience_years") IsNot Nothing, Convert.ToDouble(appObj("experience_years")), 0.0))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Init Matched Lists" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Lists">
+      <Assign.To>
+        <OutArgument x:TypeArguments="scg:List(x:String)">[matchedSkills]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="scg:List(x:String)">[New List(Of String)()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Count Required Skills With Synonyms" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_ReqCount">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Int32">[out_MatchedReqCount]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Int32">[If(critObj("required_skills") IsNot Nothing, critObj("required_skills").Count(Function(sk) lowerText.Contains(sk.ToString().ToLowerInvariant()) OrElse (critObj("synonyms") IsNot Nothing AndAlso critObj("synonyms")(sk.ToString()) IsNot Nothing AndAlso critObj("synonyms")(sk.ToString()).Any(Function(syn) lowerText.Contains(syn.ToString().ToLowerInvariant())))), 0)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Count Preferred Skills With Synonyms" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_PrefCount">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Int32">[out_MatchedPrefCount]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Int32">[If(critObj("preferred_skills") IsNot Nothing, critObj("preferred_skills").Count(Function(sk) lowerText.Contains(sk.ToString().ToLowerInvariant()) OrElse (critObj("synonyms") IsNot Nothing AndAlso critObj("synonyms")(sk.ToString()) IsNot Nothing AndAlso critObj("synonyms")(sk.ToString()).Any(Function(syn) lowerText.Contains(syn.ToString().ToLowerInvariant())))), 0)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Evaluate Knock-out Criteria" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_KO_Prep">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[appCity]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(appObj("city") IsNot Nothing, appObj("city").ToString().Trim().ToLowerInvariant(), "")]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Min Exp From Criteria" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_MinExp">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Double">[minExp]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Double">[If(critObj("knockout") IsNot Nothing AndAlso critObj("knockout")("min_experience_years") IsNot Nothing, Convert.ToDouble(critObj("knockout")("min_experience_years")), 1.0)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Min Edu From Criteria" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_MinEdu">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[minEdu]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(critObj("knockout") IsNot Nothing AndAlso critObj("knockout")("min_education") IsNot Nothing, critObj("knockout")("min_education").ToString(), "S1")]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Check Allowed Cities" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_CityCheck">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Boolean">[cityAllowed]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Boolean">[String.IsNullOrEmpty(appCity) OrElse critObj("knockout") Is Nothing OrElse critObj("knockout")("allowed_cities") Is Nothing OrElse critObj("knockout")("allowed_cities").Any(Function(c) appCity.Contains(c.ToString().ToLowerInvariant()))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Compute Knockout Failure" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_KOFailed">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Boolean">[out_IsKnockoutFailed]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Boolean">[(minEdu.Equals("S1") AndAlso Not (out_Education.Equals("S1") OrElse out_Education.Equals("S2"))) OrElse (out_ExperienceYears &lt; minExp) OrElse (Not cityAllowed)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Build Knockout Reason" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_KOReason">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[out_KnockoutReason]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Not out_IsKnockoutFailed, String.Empty, String.Join("; ", {If(minEdu.Equals("S1") AndAlso Not (out_Education.Equals("S1") OrElse out_Education.Equals("S2")), "Pendidikan di bawah syarat minimal (" &amp; minEdu &amp; ")", ""), If(out_ExperienceYears &lt; minExp, "Pengalaman " &amp; out_ExperienceYears.ToString("0.0") &amp; " thn di bawah syarat min. " &amp; minExp.ToString("0.0") &amp; " thn", ""), If(Not cityAllowed, "Domisili/penempatan di luar wilayah aktif", "")}.Where(Function(s) Not String.IsNullOrEmpty(s))))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Build Default Narrative Summary" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Summary">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[out_Summary]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[String.Format("Pendidikan {0} dengan pengalaman {1:0.0} tahun. Terpenuhi {2} skill wajib dan {3} skill tambahan.{4}", out_Education, out_ExperienceYears, out_MatchedReqCount, out_MatchedPrefCount, If(out_IsKnockoutFailed, " Gagal knock-out: " &amp; out_KnockoutReason, ""))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <If Condition="[in_UseLlm AndAlso Not String.IsNullOrWhiteSpace(in_LlmApiKey)]" DisplayName="Optional Gemini LLM Enrichment" sap:VirtualizedContainerService.HintSize="518,320" sap2010:WorkflowViewState.IdRef="If_LLM">
+      <If.Then>
+        <TryCatch DisplayName="Call Gemini API With Fallback" sap:VirtualizedContainerService.HintSize="440,240" sap2010:WorkflowViewState.IdRef="TryCatch_LLM">
+          <TryCatch.Try>
+            <Sequence DisplayName="Invoke Gemini Flash" sap:VirtualizedContainerService.HintSize="400,220" sap2010:WorkflowViewState.IdRef="Sequence_LLM">
+              <Assign DisplayName="Build Gemini Request Body" sap:VirtualizedContainerService.HintSize="358,82" sap2010:WorkflowViewState.IdRef="Assign_LlmBody">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:String">[llmBody]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:String">[New JObject(New JProperty("contents", New JArray(New JObject(New JProperty("parts", New JArray(New JObject(New JProperty("text", "Ringkas CV berikut dalam 2 kalimat Bahasa Indonesia untuk HR tanpa data PII: " &amp; If(in_RawText, "").Substring(0, Math.Min(If(in_RawText, "").Length, 2500)))))))))).ToString()]</InArgument>
+                </Assign.Value>
+              </Assign>
+              <ui:HttpClient Body="[llmBody]" BodyFormat="application/json" ClientCertificate="{x:Null}" ClientCertificatePassword="{x:Null}" ConsumerKey="{x:Null}" ConsumerSecret="{x:Null}" ContinueOnError="True" FileAttachments="{x:Null}" OAuth1Token="{x:Null}" OAuth1TokenSecret="{x:Null}" OAuth2Token="{x:Null}" Password="{x:Null}" ResourcePath="{x:Null}" ResponseAttachment="{x:Null}" ResponseHeaders="{x:Null}" SecureClientCertificatePassword="{x:Null}" SecurePassword="{x:Null}" Username="{x:Null}" AcceptFormat="JSON" DisplayName="POST Gemini GenerateContent" EnableSSLVerification="True" EndPoint="[String.Format(&quot;https://generativelanguage.googleapis.com/v1beta/models/{0}:generateContent?key={1}&quot;, If(String.IsNullOrWhiteSpace(in_LlmModel), &quot;gemini-2.5-flash&quot;, in_LlmModel), in_LlmApiKey)]" sap:VirtualizedContainerService.HintSize="358,102" sap2010:WorkflowViewState.IdRef="HttpClient_LLM" Method="POST" Result="[llmResp]" StatusCode="[llmStatus]" TimeoutMS="12000">
+                <ui:HttpClient.Headers>
+                  <InArgument x:TypeArguments="x:String" x:Key="Content-Type">application/json</InArgument>
+                </ui:HttpClient.Headers>
+              </ui:HttpClient>
+              <If Condition="[llmStatus = 200 AndAlso Not String.IsNullOrWhiteSpace(llmResp)]" DisplayName="Extract LLM Summary" sap:VirtualizedContainerService.HintSize="358,120" sap2010:WorkflowViewState.IdRef="If_LlmOk">
+                <If.Then>
+                  <Assign DisplayName="Override Summary From Gemini" sap:VirtualizedContainerService.HintSize="320,82" sap2010:WorkflowViewState.IdRef="Assign_LlmSum">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:String">[out_Summary]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:String">[JObject.Parse(llmResp)("candidates")(0)("content")("parts")(0)("text").ToString().Trim()]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                </If.Then>
+              </If>
+            </Sequence>
+          </TryCatch.Try>
+          <TryCatch.Catches>
+            <Catch x:TypeArguments="s:Exception" sap:VirtualizedContainerService.HintSize="404,22" sap2010:WorkflowViewState.IdRef="Catch_LLM">
+              <ActivityAction x:TypeArguments="s:Exception">
+                <ActivityAction.Argument>
+                  <DelegateInArgument x:TypeArguments="s:Exception" Name="ex" />
+                </ActivityAction.Argument>
+                <ui:LogMessage DisplayName="LLM Fallback Log" sap:VirtualizedContainerService.HintSize="334,143" sap2010:WorkflowViewState.IdRef="LogMessage_LlmWarn" Level="Warn" Message="[&quot;[Parse_Cv_Entities] LLM fallback ke parser lokal: &quot; &amp; ex.Message]" />
+              </ActivityAction>
+            </Catch>
+          </TryCatch.Catches>
+        </TryCatch>
+      </If.Then>
+    </If>
+    <Assign DisplayName="Serialize Parsed Data JSON" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_ParsedJson">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[out_ParsedDataJson]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[New JObject(New JProperty("education", out_Education), New JProperty("experience_years", out_ExperienceYears), New JProperty("matched_required_count", out_MatchedReqCount), New JProperty("matched_preferred_count", out_MatchedPrefCount), New JProperty("is_knockout_failed", out_IsKnockoutFailed)).ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+  </Sequence>
+</Activity>

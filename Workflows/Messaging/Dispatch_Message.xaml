@@ -1,0 +1,171 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Dispatch_Message" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_MessageJson" Type="InArgument(x:String)" />
+    <x:Property Name="in_EmailMode" Type="InArgument(x:String)" />
+    <x:Property Name="in_SmtpHost" Type="InArgument(x:String)" />
+    <x:Property Name="in_SmtpPort" Type="InArgument(x:Int32)" />
+    <x:Property Name="in_SenderEmail" Type="InArgument(x:String)" />
+    <x:Property Name="in_SmtpPassword" Type="InArgument(x:String)" />
+    <x:Property Name="out_Status" Type="OutArgument(x:String)" />
+    <x:Property Name="out_Error" Type="OutArgument(x:String)" />
+  </x:Members>
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="36">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Mail</x:String>
+      <x:String>UiPath.Mail.SMTP.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="36">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Mail.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Merender template pesan (UNDANGAN / PENOLAKAN) lalu mengirim via SMTP atau mencatat simulasi jika RF_Email_Mode = SIMULATION." DisplayName="Dispatch_Message" sap:VirtualizedContainerService.HintSize="540,760" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="njl:JObject" Name="msgObj" />
+      <Variable x:TypeArguments="njl:JObject" Name="payload" />
+      <Variable x:TypeArguments="x:String" Name="msgType" />
+      <Variable x:TypeArguments="x:String" Name="toEmail" />
+      <Variable x:TypeArguments="x:String" Name="subject" />
+      <Variable x:TypeArguments="x:String" Name="body" />
+    </Sequence.Variables>
+    <Assign DisplayName="Parse Message JSON" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Msg">
+      <Assign.To>
+        <OutArgument x:TypeArguments="njl:JObject">[msgObj]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="njl:JObject">[JObject.Parse(in_MessageJson)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Extract Payload" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Pay">
+      <Assign.To>
+        <OutArgument x:TypeArguments="njl:JObject">[payload]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="njl:JObject">[CType(msgObj("payload"), JObject)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Get Type And Recipient" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Type">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[msgType]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[msgObj("message_type").ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Get Recipient Email" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_To">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[toEmail]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[payload("to_email").ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Render Subject" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Subj">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[subject]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(msgType.Equals("UNDANGAN"), String.Format("Undangan Wawancara: {0} - {1}", payload("position"), payload("company")), String.Format("Pembaruan Status Lamaran: {0} - {1}", payload("position"), payload("company")))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Render Body" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Body">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[body]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(msgType.Equals("UNDANGAN"), String.Format("Halo {0},{1}{1}Selamat! Anda diundang wawancara posisi {2} di {3}.{1}Tanggal: {4} | Jam: {5} WIB{1}Lokasi: {6}{1}Konfirmasi kehadiran sebelum {7} lewat tautan: {8}", payload("to_name"), Environment.NewLine, payload("position"), payload("company"), payload("date"), payload("time"), payload("location"), payload("deadline"), payload("link_confirm")), String.Format("Halo {0},{1}{1}Terima kasih telah melamar posisi {2} di {3}. Saat ini kami belum dapat melanjutkan lamaran Anda ke tahap wawancara.{1}Info Talent Pool: {4}", payload("to_name"), Environment.NewLine, payload("position"), payload("company"), If(payload("talent_pool_link") IsNot Nothing, payload("talent_pool_link").ToString(), "-")))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <If Condition="[String.Equals(in_EmailMode, &quot;SMTP&quot;, StringComparison.OrdinalIgnoreCase) AndAlso Not String.IsNullOrWhiteSpace(in_SmtpPassword)]" DisplayName="Send SMTP Or Simulate" sap:VirtualizedContainerService.HintSize="478,340" sap2010:WorkflowViewState.IdRef="If_Mode">
+      <If.Then>
+        <TryCatch DisplayName="Send SMTP Mail" sap:VirtualizedContainerService.HintSize="440,240" sap2010:WorkflowViewState.IdRef="TryCatch_Smtp">
+          <TryCatch.Try>
+            <Sequence DisplayName="Execute SendMail" sap:VirtualizedContainerService.HintSize="380,220" sap2010:WorkflowViewState.IdRef="Sequence_Smtp">
+              <ui:SendMail Bcc="{x:Null}" Cc="{x:Null}" ContinueOnError="{x:Null}" MailMessage="{x:Null}" Name="{x:Null}" ReplyTo="{x:Null}" Result="{x:Null}" SecurePassword="{x:Null}" TimeoutMS="{x:Null}" UseOAuth="{x:Null}" Body="[body]" DisplayName="Send SMTP Mail Message" Email="[in_SenderEmail]" EnableSSL="True" From="[in_SenderEmail]" sap:VirtualizedContainerService.HintSize="334,152" sap2010:WorkflowViewState.IdRef="SendMail_1" IgnoreCRL="False" IsBodyHtml="False" Password="[in_SmtpPassword]" Port="[in_SmtpPort]" SecureConnection="StartTls" Server="[in_SmtpHost]" Subject="[subject]" To="[toEmail]">
+                <ui:SendMail.Files>
+                  <scg:List x:TypeArguments="InArgument(x:String)" Capacity="0" />
+                </ui:SendMail.Files>
+              </ui:SendMail>
+              <Assign DisplayName="Mark SENT" sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_Sent">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:String">[out_Status]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:String">SENT</InArgument>
+                </Assign.Value>
+              </Assign>
+              <Assign DisplayName="Clear Error" sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_NoErr">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:String">[out_Error]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:String">[String.Empty]</InArgument>
+                </Assign.Value>
+              </Assign>
+            </Sequence>
+          </TryCatch.Try>
+          <TryCatch.Catches>
+            <Catch x:TypeArguments="s:Exception" sap:VirtualizedContainerService.HintSize="404,22" sap2010:WorkflowViewState.IdRef="Catch_Smtp">
+              <ActivityAction x:TypeArguments="s:Exception">
+                <ActivityAction.Argument>
+                  <DelegateInArgument x:TypeArguments="s:Exception" Name="ex" />
+                </ActivityAction.Argument>
+                <Sequence DisplayName="Handle SMTP Failure" sap:VirtualizedContainerService.HintSize="380,180" sap2010:WorkflowViewState.IdRef="Sequence_Fail">
+                  <Assign DisplayName="Mark FAILED" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_Fail">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:String">[out_Status]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:String">FAILED</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign DisplayName="Set Error Text" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_Err">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:String">[out_Error]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:String">[ex.Message]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                </Sequence>
+              </ActivityAction>
+            </Catch>
+          </TryCatch.Catches>
+        </TryCatch>
+      </If.Then>
+      <If.Else>
+        <Sequence DisplayName="Simulation Mode Dispatch" sap:VirtualizedContainerService.HintSize="380,240" sap2010:WorkflowViewState.IdRef="Sequence_Sim">
+          <ui:LogMessage DisplayName="Log Simulated Email" sap:VirtualizedContainerService.HintSize="338,143" sap2010:WorkflowViewState.IdRef="LogMessage_Sim" Level="Info" Message="[String.Format(&quot;[SIMULATION] Email {0} siap dikirim. Subjek: {1}&quot;, msgType, subject)]" />
+          <Assign DisplayName="Mark SENT Simulation" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_SimSent">
+            <Assign.To>
+              <OutArgument x:TypeArguments="x:String">[out_Status]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="x:String">SENT</InArgument>
+            </Assign.Value>
+          </Assign>
+          <Assign DisplayName="Clear Sim Error" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_SimErr">
+            <Assign.To>
+              <OutArgument x:TypeArguments="x:String">[out_Error]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="x:String">[String.Empty]</InArgument>
+            </Assign.Value>
+          </Assign>
+        </Sequence>
+      </If.Else>
+    </If>
+  </Sequence>
+</Activity>

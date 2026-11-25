@@ -6,7 +6,7 @@
   "dependencies": {
     "UiPath.Excel.Activities": "[2.23.4]",
     "UiPath.Mail.Activities": "[1.23.1]",
-    "UiPath.PDF.Activities": "[3.16.2]",
+    "UiPath.PDF.Activities": "[3.25.3]",
     "UiPath.System.Activities": "[24.10.0]",
     "UiPath.Testing.Activities": "[24.10.0]",
     "UiPath.WebAPI.Activities": "[1.20.1]"
@@ -24,59 +24,38 @@
     "projectProfile": "Developement",
     "outputType": "Process",
     "libraryOptions": {
-      "includeOriginalXaml": false,
+      "includeOriginalXaml": true,
       "privateWorkflows": []
     },
     "processOptions": {
       "ignoredFiles": []
     },
-    "fileInfoCollection": [
-      {
-        "editingStatus": "InProgress",
-        "testCaseId": null,
-        "fileName": "Main_CV_Screening.xaml"
-      },
-      {
-        "editingStatus": "InProgress",
-        "testCaseId": null,
-        "fileName": "Main_Messaging.xaml"
-      },
-      {
-        "editingStatus": "InProgress",
-        "testCaseId": null,
-        "fileName": "Main_Scheduling.xaml"
-      },
-      {
-        "editingStatus": "InProgress",
-        "testCaseId": null,
-        "fileName": "Main_Reporting.xaml"
-      }
-    ],
+    "fileInfoCollection": [],
     "modernBehavior": true
   },
   "expressionLanguage": "VisualBasic",
   "entryPoints": [
     {
       "filePath": "Main_CV_Screening.xaml",
-      "uniqueId": "ep_cv_screening",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000001",
       "input": [],
       "output": []
     },
     {
       "filePath": "Main_Messaging.xaml",
-      "uniqueId": "ep_messaging",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000002",
       "input": [],
       "output": []
     },
     {
       "filePath": "Main_Scheduling.xaml",
-      "uniqueId": "ep_scheduling",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000003",
       "input": [],
       "output": []
     },
     {
       "filePath": "Main_Reporting.xaml",
-      "uniqueId": "ep_reporting",
+      "uniqueId": "a1b2c3d4-1111-4111-8111-000000000004",
       "input": [],
       "output": []
     }

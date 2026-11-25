@@ -1,11 +1,16 @@
-<Activity mc:Ignorable="sap sap2010" x:Class="Main_Scheduling" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="Main_Scheduling" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_ApiBaseUrl" Type="InArgument(x:String)" />
+    <x:Property Name="in_ApiToken" Type="InArgument(x:String)" />
+  </x:Members>
   <TextExpression.NamespacesForImplementation>
-    <scg:List x:TypeArguments="x:String" Capacity="42">
+    <scg:List x:TypeArguments="x:String" Capacity="38">
       <x:String>System.Activities</x:String>
       <x:String>System.Activities.Statements</x:String>
       <x:String>System</x:String>
       <x:String>System.Collections</x:String>
       <x:String>System.Collections.Generic</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
       <x:String>UiPath.Core</x:String>
       <x:String>UiPath.Core.Activities</x:String>
     </scg:List>
@@ -14,13 +19,217 @@
     <scg:List x:TypeArguments="AssemblyReference" Capacity="38">
       <AssemblyReference>System.Activities</AssemblyReference>
       <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
       <AssemblyReference>UiPath.System.Activities</AssemblyReference>
-      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
     </scg:List>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap2010:Annotation.AnnotationText="Entry Point 3: Engine Alokasi Slot Wawancara, Penanganan Bentrok Konkurensi 409, Faktor Overbooking 20%, Pelepasan Slot Kedaluwarsa, dan Pengingat H-1." DisplayName="Main_Scheduling" sap:VirtualizedContainerService.HintSize="512,680" sap2010:WorkflowViewState.IdRef="Sequence_1">
-    <ui:LogMessage DisplayName="Log Start Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;[RF_Scheduling] Memulai siklus alokasi slot wawancara dan pengingat H-1...&quot;]" />
-    <ui:Comment DisplayName="Architecture Documentation Note" sap:VirtualizedContainerService.HintSize="450,115" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Langkah Alur Kerja:&#xA;// 1. Ambil kandidat DISETUJUI_UNDANG yang belum memiliki slot.&#xA;// 2. Kunci slot kalender via POST /robot/interviews. Tangani HTTP 409 Conflict dengan mencoba slot berikutnya hingga 5x.&#xA;// 3. Periksa jendela respons 24 jam via GET /robot/interviews/expired. Jika lewat waktu, lepaskan slot ke status TERSEDIA.&#xA;// 4. Harian pukul 09:00 WIB: Ambil kandidat TERKONFIRMASI besok via /interviews/due-reminder dan kirim pengingat." />
-    <ui:LogMessage DisplayName="Log End Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[&quot;[RF_Scheduling] Siklus penjadwalan dan pemantauan waktu selesai.&quot;]" />
+  <Sequence sap2010:Annotation.AnnotationText="Entry Point 3: Engine Alokasi Slot Wawancara, Mitigasi Bentrok Konkurensi HTTP 409 (Retry s.d. 5x), dan Pemantauan Pengingat H-1." DisplayName="Main_Scheduling" sap:VirtualizedContainerService.HintSize="580,1250" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Default="RF_Scheduling" Name="processName" />
+      <Variable x:TypeArguments="scg:Dictionary(x:String, x:Object)" Name="cfg" />
+      <Variable x:TypeArguments="x:String" Name="baseUrl" />
+      <Variable x:TypeArguments="x:String" Name="apiToken" />
+      <Variable x:TypeArguments="x:String" Name="pendingResp" />
+      <Variable x:TypeArguments="x:Int32" Name="pendingStatus" />
+      <Variable x:TypeArguments="x:String" Name="slotsResp" />
+      <Variable x:TypeArguments="x:Int32" Name="slotsStatus" />
+      <Variable x:TypeArguments="njl:JArray" Name="pendingList" />
+      <Variable x:TypeArguments="njl:JArray" Name="slotList" />
+      <Variable x:TypeArguments="x:Int32" Default="0" Name="bookedCount" />
+      <Variable x:TypeArguments="x:String" Name="remResp" />
+      <Variable x:TypeArguments="x:Int32" Name="remStatus" />
+      <Variable x:TypeArguments="x:String" Name="hbResp" />
+      <Variable x:TypeArguments="x:Int32" Name="hbStatus" />
+    </Sequence.Variables>
+    <ui:LogMessage DisplayName="Log Start Process" sap:VirtualizedContainerService.HintSize="518,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;[RF_Scheduling] Memulai siklus alokasi slot wawancara dan pengingat H-1...&quot;]" />
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Load Config" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_LoadCfg" UnSafe="False" WorkflowFileName="Workflows\Common\Load_Config.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ConfigFile">Data\Config\Config.xlsx</InArgument>
+        <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:Object)" x:Key="out_Config">[cfg]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <Assign DisplayName="Set BaseUrl" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Base">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[baseUrl]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Not String.IsNullOrWhiteSpace(in_ApiBaseUrl), in_ApiBaseUrl, cfg("RF_Api_BaseUrl").ToString())]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set ApiToken" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Tok">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[apiToken]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Not String.IsNullOrWhiteSpace(in_ApiToken), in_ApiToken, cfg("RF_Api_Token").ToString())]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="GET Pending Interview Assignments" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_Pending" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/interviews/pending-assignment</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">GET</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[pendingResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[pendingStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="GET Available Slots" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_Slots" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/slots</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">GET</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[slotsResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[slotsStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <If Condition="[pendingStatus = 200 AndAlso slotsStatus = 200 AndAlso Not String.IsNullOrWhiteSpace(pendingResp) AndAlso Not String.IsNullOrWhiteSpace(slotsResp)]" DisplayName="Allocate Slots With 409 Retry" sap:VirtualizedContainerService.HintSize="518,520" sap2010:WorkflowViewState.IdRef="If_Alloc">
+      <If.Then>
+        <Sequence DisplayName="Assign Slots" sap:VirtualizedContainerService.HintSize="480,440" sap2010:WorkflowViewState.IdRef="Sequence_Alloc">
+          <Sequence.Variables>
+            <Variable x:TypeArguments="x:Int32" Default="0" Name="slotIdx" />
+          </Sequence.Variables>
+          <Assign DisplayName="Parse Pending Candidates" sap:VirtualizedContainerService.HintSize="440,82" sap2010:WorkflowViewState.IdRef="Assign_PList">
+            <Assign.To>
+              <OutArgument x:TypeArguments="njl:JArray">[pendingList]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="njl:JArray">[JArray.Parse(pendingResp)]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <Assign DisplayName="Parse Available Slots" sap:VirtualizedContainerService.HintSize="440,82" sap2010:WorkflowViewState.IdRef="Assign_SList">
+            <Assign.To>
+              <OutArgument x:TypeArguments="njl:JArray">[slotList]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="njl:JArray">[JArray.Parse(slotsResp)]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <ui:ForEach x:TypeArguments="njl:JToken" CurrentIndex="{x:Null}" DisplayName="For Each Pending Candidate" sap:VirtualizedContainerService.HintSize="440,380" sap2010:WorkflowViewState.IdRef="ForEach_Cand" Values="[pendingList]">
+            <ui:ForEach.Body>
+              <ActivityAction x:TypeArguments="njl:JToken">
+                <ActivityAction.Argument>
+                  <DelegateInArgument x:TypeArguments="njl:JToken" Name="cand" />
+                </ActivityAction.Argument>
+                <Sequence DisplayName="Book Slot With 409 Retry Loop" sap:VirtualizedContainerService.HintSize="420,340" sap2010:WorkflowViewState.IdRef="Sequence_Book">
+                  <Sequence.Variables>
+                    <Variable x:TypeArguments="x:String" Name="appId" />
+                    <Variable x:TypeArguments="x:Int32" Default="0" Name="attempts" />
+                    <Variable x:TypeArguments="x:Boolean" Default="False" Name="booked" />
+                    <Variable x:TypeArguments="x:String" Name="bookResp" />
+                    <Variable x:TypeArguments="x:Int32" Name="bookStatus" />
+                  </Sequence.Variables>
+                  <Assign DisplayName="Get Candidate AppId" sap:VirtualizedContainerService.HintSize="380,82" sap2010:WorkflowViewState.IdRef="Assign_CApp">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:String">[appId]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:String">[cand("application_id").ToString()]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <ui:InterruptibleWhile CurrentIndex="{x:Null}" Condition="[(Not booked) AndAlso (attempts &lt; 5) AndAlso (slotIdx &lt; slotList.Count)]" DisplayName="Retry Up To 5 Times On 409 Conflict" sap:VirtualizedContainerService.HintSize="380,320" sap2010:WorkflowViewState.IdRef="While_Retry">
+                    <ui:InterruptibleWhile.Body>
+                      <Sequence DisplayName="Attempt Lock Slot" sap:VirtualizedContainerService.HintSize="360,280" sap2010:WorkflowViewState.IdRef="Sequence_TrySlot">
+                        <Sequence.Variables>
+                          <Variable x:TypeArguments="x:String" Name="slotId" />
+                        </Sequence.Variables>
+                        <Assign DisplayName="Pick Next Slot" sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_PickSlot">
+                          <Assign.To>
+                            <OutArgument x:TypeArguments="x:String">[slotId]</OutArgument>
+                          </Assign.To>
+                          <Assign.Value>
+                            <InArgument x:TypeArguments="x:String">[slotList(slotIdx)("id").ToString()]</InArgument>
+                          </Assign.Value>
+                        </Assign>
+                        <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="POST /robot/interviews" sap:VirtualizedContainerService.HintSize="334,145" sap2010:WorkflowViewState.IdRef="Invoke_LockSlot" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+                          <ui:InvokeWorkflowFile.Arguments>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/interviews</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[New JObject(New JProperty("application_id", appId), New JProperty("slot_id", slotId), New JProperty("hold_until", DateTime.UtcNow.AddHours(24).ToString("o"))).ToString()]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+                            <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[bookResp]</OutArgument>
+                            <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[bookStatus]</OutArgument>
+                          </ui:InvokeWorkflowFile.Arguments>
+                        </ui:InvokeWorkflowFile>
+                        <Assign DisplayName="Advance Slot Index" sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_NextSlot">
+                          <Assign.To>
+                            <OutArgument x:TypeArguments="x:Int32">[slotIdx]</OutArgument>
+                          </Assign.To>
+                          <Assign.Value>
+                            <InArgument x:TypeArguments="x:Int32">[slotIdx + 1]</InArgument>
+                          </Assign.Value>
+                        </Assign>
+                        <Assign DisplayName="Increment Attempts" sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_IncAtt">
+                          <Assign.To>
+                            <OutArgument x:TypeArguments="x:Int32">[attempts]</OutArgument>
+                          </Assign.To>
+                          <Assign.Value>
+                            <InArgument x:TypeArguments="x:Int32">[attempts + 1]</InArgument>
+                          </Assign.Value>
+                        </Assign>
+                        <If Condition="[bookStatus = 201 OrElse bookStatus = 200]" DisplayName="Check Slot Locked" sap:VirtualizedContainerService.HintSize="334,200" sap2010:WorkflowViewState.IdRef="If_Locked">
+                          <If.Then>
+                            <Sequence DisplayName="Slot Locked Success" sap:VirtualizedContainerService.HintSize="300,180" sap2010:WorkflowViewState.IdRef="Sequence_Locked">
+                              <Assign DisplayName="Mark Booked" sap:VirtualizedContainerService.HintSize="262,82" sap2010:WorkflowViewState.IdRef="Assign_Booked">
+                                <Assign.To>
+                                  <OutArgument x:TypeArguments="x:Boolean">[booked]</OutArgument>
+                                </Assign.To>
+                                <Assign.Value>
+                                  <InArgument x:TypeArguments="x:Boolean">[True]</InArgument>
+                                </Assign.Value>
+                              </Assign>
+                              <Assign DisplayName="Increment Booked Count" sap:VirtualizedContainerService.HintSize="262,82" sap2010:WorkflowViewState.IdRef="Assign_IncBooked">
+                                <Assign.To>
+                                  <OutArgument x:TypeArguments="x:Int32">[bookedCount]</OutArgument>
+                                </Assign.To>
+                                <Assign.Value>
+                                  <InArgument x:TypeArguments="x:Int32">[bookedCount + 1]</InArgument>
+                                </Assign.Value>
+                              </Assign>
+                            </Sequence>
+                          </If.Then>
+                        </If>
+                      </Sequence>
+                    </ui:InterruptibleWhile.Body>
+                  </ui:InterruptibleWhile>
+                </Sequence>
+              </ActivityAction>
+            </ui:ForEach.Body>
+          </ui:ForEach>
+        </Sequence>
+      </If.Then>
+    </If>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="GET H-1 Due Reminders" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_Rem" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">[String.Format("/robot/interviews/due-reminder?date={0}", DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"))]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">GET</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[remResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[remStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="Send Final Heartbeat" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_HB" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/heartbeat</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[New JObject(New JProperty("process", processName), New JProperty("version", "1.0.0"), New JProperty("status", "IDLE"), New JProperty("tasks", bookedCount)).ToString()]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[hbResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[hbStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <ui:LogMessage DisplayName="Log End Process" sap:VirtualizedContainerService.HintSize="518,143" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[String.Format(&quot;[RF_Scheduling] Siklus selesai. Total slot dikunci: {0}&quot;, bookedCount)]" />
   </Sequence>
 </Activity>

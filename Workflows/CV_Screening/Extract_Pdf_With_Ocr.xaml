@@ -1,0 +1,117 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Extract_Pdf_With_Ocr" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:updf="clr-namespace:UiPath.PDF.Activities;assembly=UiPath.PDF.Activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_PdfPath" Type="InArgument(x:String)" />
+    <x:Property Name="in_MinChars" Type="InArgument(x:Int32)" />
+    <x:Property Name="out_Text" Type="OutArgument(x:String)" />
+    <x:Property Name="out_UsedOcr" Type="OutArgument(x:Boolean)" />
+    <x:Property Name="out_Confidence" Type="OutArgument(x:Double)" />
+  </x:Members>
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="32">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.PDF.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="32">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.PDF.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Mengekstrak teks PDF CV via Read PDF Text, dengan deteksi teks pendek/scan (ambang OCR) untuk menurunkan confidence dan menandai tinjauan manual jika berkas tidak terbaca." DisplayName="Extract_Pdf_With_Ocr" sap:VirtualizedContainerService.HintSize="540,760" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:Int32" Name="minThreshold" />
+    </Sequence.Variables>
+    <Assign DisplayName="Resolve Min Chars" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Min">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Int32">[minThreshold]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Int32">[If(in_MinChars &gt; 0, in_MinChars, 200)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Init Defaults" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Def">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Boolean">[out_UsedOcr]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Boolean">[False]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <TryCatch DisplayName="Read PDF Text With Low-Text Guard" sap:VirtualizedContainerService.HintSize="478,520" sap2010:WorkflowViewState.IdRef="TryCatch_1">
+      <TryCatch.Try>
+        <Sequence DisplayName="Extract Text" sap:VirtualizedContainerService.HintSize="440,420" sap2010:WorkflowViewState.IdRef="Sequence_Try">
+          <updf:ReadPDFText PreserveFormatting="{x:Null}" DisplayName="Read PDF Text" FileName="[in_PdfPath]" sap:VirtualizedContainerService.HintSize="400,82" sap2010:WorkflowViewState.IdRef="ReadPDFText_1" Range="All" Text="[out_Text]" />
+          <If Condition="[String.IsNullOrWhiteSpace(out_Text) OrElse out_Text.Trim().Length &lt; minThreshold]" DisplayName="Check Short Or Scanned Text" sap:VirtualizedContainerService.HintSize="400,280" sap2010:WorkflowViewState.IdRef="If_Ocr">
+            <If.Then>
+              <Sequence DisplayName="Flag Low Text Confidence" sap:VirtualizedContainerService.HintSize="380,220" sap2010:WorkflowViewState.IdRef="Sequence_Ocr">
+                <ui:LogMessage DisplayName="Log Short PDF Warning" sap:VirtualizedContainerService.HintSize="338,143" sap2010:WorkflowViewState.IdRef="LogMessage_Warn" Level="Warn" Message="[&quot;[Extract_Pdf_With_Ocr] Teks PDF di bawah ambang minimum, menandai perlu OCR/tinjauan: &quot; &amp; in_PdfPath]" />
+                <Assign DisplayName="Mark Used OCR Flag" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_UsedOcr">
+                  <Assign.To>
+                    <OutArgument x:TypeArguments="x:Boolean">[out_UsedOcr]</OutArgument>
+                  </Assign.To>
+                  <Assign.Value>
+                    <InArgument x:TypeArguments="x:Boolean">[True]</InArgument>
+                  </Assign.Value>
+                </Assign>
+                <Assign DisplayName="Set Low Text Confidence" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_ConfOcr">
+                  <Assign.To>
+                    <OutArgument x:TypeArguments="x:Double">[out_Confidence]</OutArgument>
+                  </Assign.To>
+                  <Assign.Value>
+                    <InArgument x:TypeArguments="x:Double">[If(String.IsNullOrWhiteSpace(out_Text) OrElse out_Text.Trim().Length &lt; 30, 0.3, 0.72)]</InArgument>
+                  </Assign.Value>
+                </Assign>
+              </Sequence>
+            </If.Then>
+            <If.Else>
+              <Assign DisplayName="Set Native PDF Confidence" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_ConfNative">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:Double">[out_Confidence]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:Double">[0.96]</InArgument>
+                </Assign.Value>
+              </Assign>
+            </If.Else>
+          </If>
+        </Sequence>
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="s:Exception" sap:VirtualizedContainerService.HintSize="404,22" sap2010:WorkflowViewState.IdRef="Catch_1">
+          <ActivityAction x:TypeArguments="s:Exception">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="s:Exception" Name="ex" />
+            </ActivityAction.Argument>
+            <Sequence DisplayName="Corrupt PDF Handling" sap:VirtualizedContainerService.HintSize="380,180" sap2010:WorkflowViewState.IdRef="Sequence_Err">
+              <ui:LogMessage DisplayName="Log PDF Exception" sap:VirtualizedContainerService.HintSize="338,143" sap2010:WorkflowViewState.IdRef="LogMessage_Err" Level="Warn" Message="[&quot;[Extract_Pdf_With_Ocr] Gagal membaca PDF: &quot; &amp; ex.Message]" />
+              <Assign DisplayName="Clear Text" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_ErrTxt">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:String">[out_Text]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:String">[String.Empty]</InArgument>
+                </Assign.Value>
+              </Assign>
+              <Assign DisplayName="Zero Confidence" sap:VirtualizedContainerService.HintSize="338,82" sap2010:WorkflowViewState.IdRef="Assign_ErrConf">
+                <Assign.To>
+                  <OutArgument x:TypeArguments="x:Double">[out_Confidence]</OutArgument>
+                </Assign.To>
+                <Assign.Value>
+                  <InArgument x:TypeArguments="x:Double">[0.0]</InArgument>
+                </Assign.Value>
+              </Assign>
+            </Sequence>
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+    </TryCatch>
+  </Sequence>
+</Activity>

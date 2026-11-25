@@ -1,4 +1,4 @@
-<Activity mc:Ignorable="sap sap2010" x:Class="Score_Candidate" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="Score_Candidate" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <x:Members>
     <x:Property Name="in_Education" Type="InArgument(x:String)" />
     <x:Property Name="in_ExperienceYears" Type="InArgument(x:Double)" />
@@ -6,18 +6,86 @@
     <x:Property Name="in_MatchedPrefCount" Type="InArgument(x:Int32)" />
     <x:Property Name="in_IsKnockoutFailed" Type="InArgument(x:Boolean)" />
     <x:Property Name="in_KnockoutReason" Type="InArgument(x:String)" />
+    <x:Property Name="in_Confidence" Type="InArgument(x:Double)" />
     <x:Property Name="out_Score" Type="OutArgument(x:Double)" />
     <x:Property Name="out_Group" Type="OutArgument(x:String)" />
+    <x:Property Name="out_BreakdownJson" Type="OutArgument(x:String)" />
   </x:Members>
-  <Sequence sap2010:Annotation.AnnotationText="Kalkulasi Skor Terbobot (Pendidikan 10%, Pengalaman 20%, Skill Wajib 50%, Skill Tambahan 20%) dan Pengelompokan Ambang Batas (Sesuai, Perlu Dicek, Tidak Sesuai)." DisplayName="Score_Candidate" sap:VirtualizedContainerService.HintSize="550,750" sap2010:WorkflowViewState.IdRef="Sequence_1">
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="36">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="36">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Kalkulasi Skor Terbobot (Pendidikan 10%, Pengalaman 20%, Skill Wajib 50%, Skill Tambahan 20%) dan Pengelompokan Ambang Batas (SESUAI, PERLU_DICEK, TIDAK_SESUAI)." DisplayName="Score_Candidate" sap:VirtualizedContainerService.HintSize="550,920" sap2010:WorkflowViewState.IdRef="Sequence_1">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:Double" Name="eduScore" />
       <Variable x:TypeArguments="x:Double" Name="expScore" />
       <Variable x:TypeArguments="x:Double" Name="reqScore" />
       <Variable x:TypeArguments="x:Double" Name="prefScore" />
     </Sequence.Variables>
-    <ui:Comment DisplayName="Mathematical Formula Note" sap:VirtualizedContainerService.HintSize="488,135" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Formula Skoring PRD:&#xA;// 1. eduScore = If(in_Education.Equals(&quot;S1&quot;), 10.0, If(in_Education.Equals(&quot;D3&quot;), 5.0, 0.0))&#xA;// 2. expScore = Math.Min(in_ExperienceYears / 2.0, 1.0) * 20.0&#xA;// 3. reqScore = (in_MatchedReqCount / 4.0) * 50.0&#xA;// 4. prefScore = (in_MatchedPrefCount / 2.0) * 20.0&#xA;// out_Score = Math.Round(eduScore + expScore + reqScore + prefScore, 1)" />
-    <If Condition="[in_IsKnockoutFailed]" DisplayName="Check Knockout Result" sap:VirtualizedContainerService.HintSize="488,432" sap2010:WorkflowViewState.IdRef="If_1">
+    <Assign DisplayName="Compute Education Score (10%)" sap:VirtualizedContainerService.HintSize="488,82" sap2010:WorkflowViewState.IdRef="Assign_EduScore">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Double">[eduScore]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Double">[If(in_Education.Equals("S1") OrElse in_Education.Equals("S2"), 10.0, If(in_Education.Equals("D3"), 5.0, 0.0))]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Compute Experience Score (20%)" sap:VirtualizedContainerService.HintSize="488,82" sap2010:WorkflowViewState.IdRef="Assign_ExpScore">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Double">[expScore]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Double">[Math.Min(in_ExperienceYears / 2.0, 1.0) * 20.0]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Compute Required Skill Score (50%)" sap:VirtualizedContainerService.HintSize="488,82" sap2010:WorkflowViewState.IdRef="Assign_ReqScore">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Double">[reqScore]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Double">[Math.Min(in_MatchedReqCount / 4.0, 1.0) * 50.0]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Compute Preferred Skill Score (20%)" sap:VirtualizedContainerService.HintSize="488,82" sap2010:WorkflowViewState.IdRef="Assign_PrefScore">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Double">[prefScore]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Double">[Math.Min(in_MatchedPrefCount / 2.0, 1.0) * 20.0]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Calculate Total Score" sap:VirtualizedContainerService.HintSize="488,82" sap2010:WorkflowViewState.IdRef="Assign_TotalScore">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:Double">[out_Score]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:Double">[Math.Round(eduScore + expScore + reqScore + prefScore, 1)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Build Score Breakdown JSON" sap:VirtualizedContainerService.HintSize="488,82" sap2010:WorkflowViewState.IdRef="Assign_Breakdown">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[out_BreakdownJson]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[New JArray(New JObject(New JProperty("label", "Pendidikan (10%)"), New JProperty("score", Math.Round(eduScore, 1)), New JProperty("max", 10)), New JObject(New JProperty("label", "Pengalaman (20%)"), New JProperty("score", Math.Round(expScore, 1)), New JProperty("max", 20)), New JObject(New JProperty("label", "Skill Wajib (50%)"), New JProperty("score", Math.Round(reqScore, 1)), New JProperty("max", 50)), New JObject(New JProperty("label", "Skill Tambahan (20%)"), New JProperty("score", Math.Round(prefScore, 1)), New JProperty("max", 20))).ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <If Condition="[in_IsKnockoutFailed OrElse out_Score &lt; 55.0]" DisplayName="Check Knockout Or Below Minimum" sap:VirtualizedContainerService.HintSize="488,360" sap2010:WorkflowViewState.IdRef="If_1">
       <If.Then>
         <Assign DisplayName="Group: TIDAK_SESUAI" sap:VirtualizedContainerService.HintSize="434,82" sap2010:WorkflowViewState.IdRef="Assign_1">
           <Assign.To>
@@ -29,9 +97,9 @@
         </Assign>
       </If.Then>
       <If.Else>
-        <If Condition="[out_Score &gt;= 75.0]" DisplayName="Check Score Threshold" sap:VirtualizedContainerService.HintSize="434,222" sap2010:WorkflowViewState.IdRef="If_2">
+        <If Condition="[out_Score &gt;= 75.0 AndAlso (in_Confidence &lt;= 0 OrElse in_Confidence &gt;= 0.6)]" DisplayName="Check Score Threshold" sap:VirtualizedContainerService.HintSize="434,222" sap2010:WorkflowViewState.IdRef="If_2">
           <If.Then>
-            <Assign DisplayName="Group: SESUAI" sap:VirtualizedContainerService.HintSize="262,60" sap2010:WorkflowViewState.IdRef="Assign_2">
+            <Assign DisplayName="Group: SESUAI" sap:VirtualizedContainerService.HintSize="262,82" sap2010:WorkflowViewState.IdRef="Assign_2">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[out_Group]</OutArgument>
               </Assign.To>
@@ -41,7 +109,7 @@
             </Assign>
           </If.Then>
           <If.Else>
-            <Assign DisplayName="Group: PERLU_DICEK" sap:VirtualizedContainerService.HintSize="262,60" sap2010:WorkflowViewState.IdRef="Assign_3">
+            <Assign DisplayName="Group: PERLU_DICEK" sap:VirtualizedContainerService.HintSize="262,82" sap2010:WorkflowViewState.IdRef="Assign_3">
               <Assign.To>
                 <OutArgument x:TypeArguments="x:String">[out_Group]</OutArgument>
               </Assign.To>

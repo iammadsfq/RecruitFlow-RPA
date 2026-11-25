@@ -1,34 +1,363 @@
-<Activity mc:Ignorable="sap sap2010" x:Class="Main_CV_Screening" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Activity mc:Ignorable="sap sap2010" x:Class="Main_CV_Screening" sap2010:WorkflowViewState.IdRef="ActivityBuilder_1" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:njl="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_ApiBaseUrl" Type="InArgument(x:String)" />
+    <x:Property Name="in_ApiToken" Type="InArgument(x:String)" />
+    <x:Property Name="in_LlmApiKey" Type="InArgument(x:String)" />
+  </x:Members>
   <TextExpression.NamespacesForImplementation>
     <scg:List x:TypeArguments="x:String" Capacity="42">
+      <x:String>GlobalConstantsNamespace</x:String>
+      <x:String>GlobalVariablesNamespace</x:String>
+      <x:String>Newtonsoft.Json.Linq</x:String>
+      <x:String>System</x:String>
       <x:String>System.Activities</x:String>
       <x:String>System.Activities.Statements</x:String>
-      <x:String>System.Activities.Expressions</x:String>
-      <x:String>System</x:String>
       <x:String>System.Collections</x:String>
       <x:String>System.Collections.Generic</x:String>
-      <x:String>System.Data</x:String>
+      <x:String>System.Collections.ObjectModel</x:String>
+      <x:String>System.IO</x:String>
+      <x:String>System.Linq</x:String>
       <x:String>UiPath.Core</x:String>
       <x:String>UiPath.Core.Activities</x:String>
     </scg:List>
   </TextExpression.NamespacesForImplementation>
   <TextExpression.ReferencesForImplementation>
-    <scg:List x:TypeArguments="AssemblyReference" Capacity="38">
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="40">
       <AssemblyReference>System.Activities</AssemblyReference>
       <AssemblyReference>System.Private.CoreLib</AssemblyReference>
-      <AssemblyReference>System.Data</AssemblyReference>
+      <AssemblyReference>Newtonsoft.Json</AssemblyReference>
       <AssemblyReference>UiPath.System.Activities</AssemblyReference>
-      <AssemblyReference>UiPath.UiAutomation.Activities</AssemblyReference>
+      <AssemblyReference>System.Linq</AssemblyReference>
+      <AssemblyReference>System.ObjectModel</AssemblyReference>
+      <AssemblyReference>System.ComponentModel.TypeConverter</AssemblyReference>
     </scg:List>
   </TextExpression.ReferencesForImplementation>
-  <Sequence sap2010:Annotation.AnnotationText="Entry Point 1: Dispatcher &amp; Performer untuk Ekstraksi Teks CV, Pemahaman Semantik Gemini LLM, Evaluasi Knock-out Dinamis, dan Skoring Terbobot." DisplayName="Main_CV_Screening" sap:VirtualizedContainerService.HintSize="512,680" sap2010:WorkflowViewState.IdRef="Sequence_1">
+  <Sequence sap2010:Annotation.AnnotationText="Entry Point 1: Dispatcher &amp; Performer untuk Ekstraksi Teks CV (PDF + OCR Fallback), Pemahaman Entitas/LLM, Evaluasi Knock-out, dan Skoring Terbobot." DisplayName="Main_CV_Screening" sap:VirtualizedContainerService.HintSize="580,1450" sap2010:WorkflowViewState.IdRef="Sequence_1">
     <Sequence.Variables>
       <Variable x:TypeArguments="x:String" Default="RF_CV_Screening" Name="processName" />
-      <Variable x:TypeArguments="x:String" Name="apiBaseUrl" />
+      <Variable x:TypeArguments="scg:Dictionary(x:String, x:Object)" Name="cfg" />
+      <Variable x:TypeArguments="x:String" Name="baseUrl" />
       <Variable x:TypeArguments="x:String" Name="apiToken" />
+      <Variable x:TypeArguments="x:String" Name="tempDir" />
+      <Variable x:TypeArguments="x:String" Name="appsResp" />
+      <Variable x:TypeArguments="x:Int32" Name="appsStatus" />
+      <Variable x:TypeArguments="njl:JArray" Name="appsList" />
+      <Variable x:TypeArguments="x:Int32" Default="0" Name="processedCount" />
+      <Variable x:TypeArguments="x:String" Name="hbPayload" />
+      <Variable x:TypeArguments="x:String" Name="hbResp" />
+      <Variable x:TypeArguments="x:Int32" Name="hbStatus" />
     </Sequence.Variables>
-    <ui:LogMessage DisplayName="Log Start Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;[RF_CV_Screening] Memulai siklus pemeriksaan berkas lamaran baru...&quot;]" />
-    <ui:Comment DisplayName="Architecture Documentation Note" sap:VirtualizedContainerService.HintSize="450,115" sap2010:WorkflowViewState.IdRef="Comment_1" Text="// Langkah Alur Kerja:&#xA;// 1. Init: Membaca aset RF_Api_BaseUrl dan RF_Api_Token dari Orchestrator.&#xA;// 2. Dispatcher: GET /robot/applications?status=BARU, klaim via POST /claim, tambahkan ke antrean RF_CV_Processing.&#xA;// 3. Performer: Unduh PDF, Ekstraksi teks &amp; Fallback OCR, Panggil Gemini 3.8 Flash, Evaluasi Knock-out &amp; Formula Bobot, POST hasil skor ke Platform." />
-    <ui:LogMessage DisplayName="Log End Process" sap:VirtualizedContainerService.HintSize="450,143" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[&quot;[RF_CV_Screening] Siklus pemrosesan berkas selesai dengan status sukses.&quot;]" />
+    <sap:WorkflowViewStateService.ViewState>
+      <scg:Dictionary x:TypeArguments="x:String, x:Object">
+        <x:Boolean x:Key="IsExpanded">True</x:Boolean>
+      </scg:Dictionary>
+    </sap:WorkflowViewStateService.ViewState>
+    <ui:LogMessage DisplayName="Log Start Process" sap:VirtualizedContainerService.HintSize="518,143" sap2010:WorkflowViewState.IdRef="LogMessage_1" Level="Info" Message="[&quot;[RF_CV_Screening] Memulai siklus pemeriksaan berkas lamaran baru...&quot;]" />
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Load Config" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_LoadCfg" UnSafe="False" WorkflowFileName="Workflows\Common\Load_Config.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ConfigFile">Data\Config\Config.xlsx</InArgument>
+        <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:Object)" x:Key="out_Config">[cfg]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <Assign DisplayName="Set BaseUrl" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Base">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[baseUrl]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Not String.IsNullOrWhiteSpace(in_ApiBaseUrl), in_ApiBaseUrl, cfg("RF_Api_BaseUrl").ToString())]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set ApiToken" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Tok">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[apiToken]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(Not String.IsNullOrWhiteSpace(in_ApiToken), in_ApiToken, cfg("RF_Api_Token").ToString())]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Set TempDir" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_Tmp">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[tempDir]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[cfg("RF_Temp_Dir").ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:CreateDirectory Output="{x:Null}" ContinueOnError="True" DisplayName="Ensure Temp Directory" sap:VirtualizedContainerService.HintSize="518,112" sap2010:WorkflowViewState.IdRef="CreateDir_1" Path="[tempDir]" />
+    <Assign DisplayName="Build Heartbeat Payload" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_HB1">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[hbPayload]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[New JObject(New JProperty("process", processName), New JProperty("version", "1.0.0"), New JProperty("status", "ACTIVE"), New JProperty("tasks", 0)).ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="Send Initial Heartbeat" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_HB1" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/heartbeat</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[hbPayload]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[hbResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[hbStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="GET Pending Applications" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_GetApps" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/applications?status=BARU&amp;limit=50</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">GET</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[appsResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[appsStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <If Condition="[appsStatus = 200 AndAlso Not String.IsNullOrWhiteSpace(appsResp)]" DisplayName="Process Applications Queue" sap:VirtualizedContainerService.HintSize="518,620" sap2010:WorkflowViewState.IdRef="If_AppsOk">
+      <If.Then>
+        <Sequence DisplayName="Iterate Applications" sap:VirtualizedContainerService.HintSize="480,540" sap2010:WorkflowViewState.IdRef="Sequence_Iter">
+          <Assign DisplayName="Parse JArray" sap:VirtualizedContainerService.HintSize="440,82" sap2010:WorkflowViewState.IdRef="Assign_JArr">
+            <Assign.To>
+              <OutArgument x:TypeArguments="njl:JArray">[appsList]</OutArgument>
+            </Assign.To>
+            <Assign.Value>
+              <InArgument x:TypeArguments="njl:JArray">[JArray.Parse(appsResp)]</InArgument>
+            </Assign.Value>
+          </Assign>
+          <ui:ForEach x:TypeArguments="njl:JToken" CurrentIndex="{x:Null}" DisplayName="For Each Application" sap:VirtualizedContainerService.HintSize="440,420" sap2010:WorkflowViewState.IdRef="ForEach_App" Values="[appsList]">
+            <ui:ForEach.Body>
+              <ActivityAction x:TypeArguments="njl:JToken">
+                <ActivityAction.Argument>
+                  <DelegateInArgument x:TypeArguments="njl:JToken" Name="appItem" />
+                </ActivityAction.Argument>
+                <Sequence DisplayName="Process Single Application" sap:VirtualizedContainerService.HintSize="420,380" sap2010:WorkflowViewState.IdRef="Sequence_SingleApp">
+                  <Sequence.Variables>
+                    <Variable x:TypeArguments="x:String" Name="appId" />
+                    <Variable x:TypeArguments="x:String" Name="jobId" />
+                    <Variable x:TypeArguments="x:String" Name="pdfPath" />
+                    <Variable x:TypeArguments="x:String" Name="claimResp" />
+                    <Variable x:TypeArguments="x:Int32" Name="claimStatus" />
+                    <Variable x:TypeArguments="x:String" Name="dlResp" />
+                    <Variable x:TypeArguments="x:Int32" Name="dlStatus" />
+                    <Variable x:TypeArguments="x:String" Name="cvText" />
+                    <Variable x:TypeArguments="x:Boolean" Name="usedOcr" />
+                    <Variable x:TypeArguments="x:Double" Name="ocrConf" />
+                    <Variable x:TypeArguments="x:String" Name="critResp" />
+                    <Variable x:TypeArguments="x:Int32" Name="critStatus" />
+                    <Variable x:TypeArguments="x:String" Name="eduOut" />
+                    <Variable x:TypeArguments="x:Double" Name="expOut" />
+                    <Variable x:TypeArguments="x:Int32" Name="reqCount" />
+                    <Variable x:TypeArguments="x:Int32" Name="prefCount" />
+                    <Variable x:TypeArguments="x:Boolean" Name="koFailed" />
+                    <Variable x:TypeArguments="x:String" Name="koReason" />
+                    <Variable x:TypeArguments="x:String" Name="summaryText" />
+                    <Variable x:TypeArguments="x:String" Name="parsedJson" />
+                    <Variable x:TypeArguments="x:Double" Name="finalScore" />
+                    <Variable x:TypeArguments="x:String" Name="finalGroup" />
+                    <Variable x:TypeArguments="x:String" Name="breakdownJson" />
+                    <Variable x:TypeArguments="x:String" Name="postResp" />
+                    <Variable x:TypeArguments="x:Int32" Name="postStatus" />
+                  </Sequence.Variables>
+                  <Assign DisplayName="Get App ID" sap:VirtualizedContainerService.HintSize="380,82" sap2010:WorkflowViewState.IdRef="Assign_AppId">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:String">[appId]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:String">[appItem("id").ToString()]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign DisplayName="Get Job ID" sap:VirtualizedContainerService.HintSize="380,82" sap2010:WorkflowViewState.IdRef="Assign_JobId">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:String">[jobId]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:String">[appItem("job_id").ToString()]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <Assign DisplayName="Build PDF Path" sap:VirtualizedContainerService.HintSize="380,82" sap2010:WorkflowViewState.IdRef="Assign_PdfPath">
+                    <Assign.To>
+                      <OutArgument x:TypeArguments="x:String">[pdfPath]</OutArgument>
+                    </Assign.To>
+                    <Assign.Value>
+                      <InArgument x:TypeArguments="x:String">[Path.Combine(tempDir, appId &amp; ".pdf")]</InArgument>
+                    </Assign.Value>
+                  </Assign>
+                  <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="Claim Application" sap:VirtualizedContainerService.HintSize="380,145" sap2010:WorkflowViewState.IdRef="Invoke_Claim" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+                    <ui:InvokeWorkflowFile.Arguments>
+                      <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                      <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                      <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">[String.Format("/robot/applications/{0}/claim", appId)]</InArgument>
+                      <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+                      <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">{}</InArgument>
+                      <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+                      <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[claimResp]</OutArgument>
+                      <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[claimStatus]</OutArgument>
+                    </ui:InvokeWorkflowFile.Arguments>
+                  </ui:InvokeWorkflowFile>
+                  <If Condition="[claimStatus = 200]" DisplayName="Proceed When Claimed" sap:VirtualizedContainerService.HintSize="380,460" sap2010:WorkflowViewState.IdRef="If_Claimed">
+                    <If.Then>
+                      <Sequence DisplayName="Download, Extract, Score" sap:VirtualizedContainerService.HintSize="360,400" sap2010:WorkflowViewState.IdRef="Sequence_Claimed">
+                        <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Download CV PDF" sap:VirtualizedContainerService.HintSize="334,145" sap2010:WorkflowViewState.IdRef="Invoke_Dl" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+                          <ui:InvokeWorkflowFile.Arguments>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">[String.Format("/robot/applications/{0}/cv", appId)]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_Method">GET</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[String.Empty]</InArgument>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[pdfPath]</InArgument>
+                            <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[dlResp]</OutArgument>
+                            <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[dlStatus]</OutArgument>
+                          </ui:InvokeWorkflowFile.Arguments>
+                        </ui:InvokeWorkflowFile>
+                        <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Extract PDF Text With OCR" sap:VirtualizedContainerService.HintSize="334,145" sap2010:WorkflowViewState.IdRef="Invoke_Extract" UnSafe="False" WorkflowFileName="Workflows\CV_Screening\Extract_Pdf_With_Ocr.xaml">
+                          <ui:InvokeWorkflowFile.Arguments>
+                            <InArgument x:TypeArguments="x:String" x:Key="in_PdfPath">[pdfPath]</InArgument>
+                            <InArgument x:TypeArguments="x:Int32" x:Key="in_MinChars">[Convert.ToInt32(cfg("RF_Ocr_MinChars"))]</InArgument>
+                            <OutArgument x:TypeArguments="x:String" x:Key="out_Text">[cvText]</OutArgument>
+                            <OutArgument x:TypeArguments="x:Boolean" x:Key="out_UsedOcr">[usedOcr]</OutArgument>
+                            <OutArgument x:TypeArguments="x:Double" x:Key="out_Confidence">[ocrConf]</OutArgument>
+                          </ui:InvokeWorkflowFile.Arguments>
+                        </ui:InvokeWorkflowFile>
+                        <If Condition="[String.IsNullOrWhiteSpace(cvText) OrElse cvText.Trim().Length &lt; 30]" DisplayName="Check Corrupt Or Unreadable CV" sap:VirtualizedContainerService.HintSize="334,300" sap2010:WorkflowViewState.IdRef="If_Corrupt">
+                          <If.Then>
+                            <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="Report Business Exception" sap:VirtualizedContainerService.HintSize="320,145" sap2010:WorkflowViewState.IdRef="Invoke_Err" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+                              <ui:InvokeWorkflowFile.Arguments>
+                                <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                                <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                                <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">[String.Format("/robot/applications/{0}/error", appId)]</InArgument>
+                                <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+                                <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[New JObject(New JProperty("reason", "OCR_LOW_CONFIDENCE"), New JProperty("details", "Berkas PDF korup atau teks tidak terbaca")).ToString()]</InArgument>
+                                <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+                                <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[postResp]</OutArgument>
+                                <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[postStatus]</OutArgument>
+                              </ui:InvokeWorkflowFile.Arguments>
+                            </ui:InvokeWorkflowFile>
+                          </If.Then>
+                          <If.Else>
+                            <Sequence DisplayName="Parse, Score, and Persist" sap:VirtualizedContainerService.HintSize="320,380" sap2010:WorkflowViewState.IdRef="Sequence_Score">
+                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="GET Job Criteria" sap:VirtualizedContainerService.HintSize="300,145" sap2010:WorkflowViewState.IdRef="Invoke_Crit" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+                                <ui:InvokeWorkflowFile.Arguments>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">[String.Format("/robot/jobs/{0}/criteria", jobId)]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Method">GET</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[String.Empty]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[critResp]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[critStatus]</OutArgument>
+                                </ui:InvokeWorkflowFile.Arguments>
+                              </ui:InvokeWorkflowFile>
+                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Parse CV Entities" sap:VirtualizedContainerService.HintSize="300,145" sap2010:WorkflowViewState.IdRef="Invoke_Parse" UnSafe="False" WorkflowFileName="Workflows\CV_Screening\Parse_Cv_Entities.xaml">
+                                <ui:InvokeWorkflowFile.Arguments>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_RawText">[cvText]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_AppJson">[appItem.ToString()]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_CriteriaJson">[critResp]</InArgument>
+                                  <InArgument x:TypeArguments="x:Boolean" x:Key="in_UseLlm">[Boolean.Parse(cfg("RF_Use_LLM").ToString())]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_LlmApiKey">[If(Not String.IsNullOrWhiteSpace(in_LlmApiKey), in_LlmApiKey, cfg("RF_Llm_ApiKey").ToString())]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_LlmModel">[cfg("RF_Llm_Model").ToString()]</InArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_Education">[eduOut]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:Double" x:Key="out_ExperienceYears">[expOut]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:Int32" x:Key="out_MatchedReqCount">[reqCount]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:Int32" x:Key="out_MatchedPrefCount">[prefCount]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:Boolean" x:Key="out_IsKnockoutFailed">[koFailed]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_KnockoutReason">[koReason]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_Summary">[summaryText]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_ParsedDataJson">[parsedJson]</OutArgument>
+                                </ui:InvokeWorkflowFile.Arguments>
+                              </ui:InvokeWorkflowFile>
+                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Score Candidate" sap:VirtualizedContainerService.HintSize="300,145" sap2010:WorkflowViewState.IdRef="Invoke_Score" UnSafe="False" WorkflowFileName="Workflows\CV_Screening\Score_Candidate.xaml">
+                                <ui:InvokeWorkflowFile.Arguments>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Education">[eduOut]</InArgument>
+                                  <InArgument x:TypeArguments="x:Double" x:Key="in_ExperienceYears">[expOut]</InArgument>
+                                  <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedReqCount">[reqCount]</InArgument>
+                                  <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedPrefCount">[prefCount]</InArgument>
+                                  <InArgument x:TypeArguments="x:Boolean" x:Key="in_IsKnockoutFailed">[koFailed]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_KnockoutReason">[koReason]</InArgument>
+                                  <InArgument x:TypeArguments="x:Double" x:Key="in_Confidence">[ocrConf]</InArgument>
+                                  <OutArgument x:TypeArguments="x:Double" x:Key="out_Score">[finalScore]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_Group">[finalGroup]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_BreakdownJson">[breakdownJson]</OutArgument>
+                                </ui:InvokeWorkflowFile.Arguments>
+                              </ui:InvokeWorkflowFile>
+                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="POST Extraction" sap:VirtualizedContainerService.HintSize="300,145" sap2010:WorkflowViewState.IdRef="Invoke_PostExt" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+                                <ui:InvokeWorkflowFile.Arguments>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">[String.Format("/robot/applications/{0}/extraction", appId)]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[New JObject(New JProperty("text_content", If(cvText, "").Substring(0, Math.Min(If(cvText, "").Length, 4000))), New JProperty("parsed_data", JObject.Parse(parsedJson)), New JProperty("confidence", ocrConf)).ToString()]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[postResp]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[postStatus]</OutArgument>
+                                </ui:InvokeWorkflowFile.Arguments>
+                              </ui:InvokeWorkflowFile>
+                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="POST Score" sap:VirtualizedContainerService.HintSize="300,145" sap2010:WorkflowViewState.IdRef="Invoke_PostScore" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+                                <ui:InvokeWorkflowFile.Arguments>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">[String.Format("/robot/applications/{0}/score", appId)]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[New JObject(New JProperty("score", finalScore), New JProperty("group", finalGroup), New JProperty("breakdown", JArray.Parse(breakdownJson)), New JProperty("summary", summaryText), New JProperty("confidence", ocrConf), New JProperty("is_knockout_failed", koFailed), New JProperty("knockout_reason", koReason)).ToString()]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+                                  <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[postResp]</OutArgument>
+                                  <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[postStatus]</OutArgument>
+                                </ui:InvokeWorkflowFile.Arguments>
+                              </ui:InvokeWorkflowFile>
+                              <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="Log Score To Web" sap:VirtualizedContainerService.HintSize="300,145" sap2010:WorkflowViewState.IdRef="Invoke_LogWeb" UnSafe="False" WorkflowFileName="Workflows\Common\Log_To_Web.xaml">
+                                <ui:InvokeWorkflowFile.Arguments>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Process">[processName]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_ApplicationId">[appId]</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Level">INFO</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Event">CV_SCORED</InArgument>
+                                  <InArgument x:TypeArguments="x:String" x:Key="in_Details">[String.Format("Skor={0}, Kelompok={1}, OCR={2}", finalScore, finalGroup, usedOcr)]</InArgument>
+                                </ui:InvokeWorkflowFile.Arguments>
+                              </ui:InvokeWorkflowFile>
+                            </Sequence>
+                          </If.Else>
+                        </If>
+                        <Assign DisplayName="Increment Processed Count" sap:VirtualizedContainerService.HintSize="334,82" sap2010:WorkflowViewState.IdRef="Assign_Inc">
+                          <Assign.To>
+                            <OutArgument x:TypeArguments="x:Int32">[processedCount]</OutArgument>
+                          </Assign.To>
+                          <Assign.Value>
+                            <InArgument x:TypeArguments="x:Int32">[processedCount + 1]</InArgument>
+                          </Assign.Value>
+                        </Assign>
+                      </Sequence>
+                    </If.Then>
+                  </If>
+                </Sequence>
+              </ActivityAction>
+            </ui:ForEach.Body>
+          </ui:ForEach>
+        </Sequence>
+      </If.Then>
+    </If>
+    <Assign DisplayName="Build Final Heartbeat" sap:VirtualizedContainerService.HintSize="518,82" sap2010:WorkflowViewState.IdRef="Assign_HB2">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[hbPayload]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[New JObject(New JProperty("process", processName), New JProperty("version", "1.0.0"), New JProperty("status", "IDLE"), New JProperty("tasks", processedCount)).ToString()]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="True" DisplayName="Send Final Heartbeat" sap:VirtualizedContainerService.HintSize="518,145" sap2010:WorkflowViewState.IdRef="Invoke_HB2" UnSafe="False" WorkflowFileName="Workflows\Common\Api_Request.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_BaseUrl">[baseUrl]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_ApiToken">[apiToken]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Endpoint">/robot/heartbeat</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Method">POST</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_PayloadJson">[hbPayload]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_DownloadPath">[String.Empty]</InArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_ResponseJson">[hbResp]</OutArgument>
+        <OutArgument x:TypeArguments="x:Int32" x:Key="out_StatusCode">[hbStatus]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <ui:LogMessage DisplayName="Log End Process" sap:VirtualizedContainerService.HintSize="518,143" sap2010:WorkflowViewState.IdRef="LogMessage_2" Level="Info" Message="[String.Format(&quot;[RF_CV_Screening] Siklus selesai. Total CV diproses: {0}&quot;, processedCount)]" />
   </Sequence>
 </Activity>

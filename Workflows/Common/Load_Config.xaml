@@ -1,0 +1,89 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Load_Config" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:s="clr-namespace:System;assembly=System.Private.CoreLib" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:sd="clr-namespace:System.Data;assembly=System.Data.Common" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_ConfigFile" Type="InArgument(x:String)" />
+    <x:Property Name="out_Config" Type="OutArgument(scg:Dictionary(x:String, x:Object))" />
+  </x:Members>
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="36">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>System.Data</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Excel</x:String>
+      <x:String>UiPath.Excel.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="36">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>System.Data.Common</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Excel.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Membaca pengaturan dari Data\Config\Config.xlsx dan variabel lingkungan (RF_API_TOKEN, RF_LLM_API_KEY) tanpa menyimpan rahasia di source code." DisplayName="Load_Config" sap:VirtualizedContainerService.HintSize="540,780" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="sd:DataTable" Name="dtSettings" />
+      <Variable x:TypeArguments="x:String" Name="cfgPath" />
+    </Sequence.Variables>
+    <Assign DisplayName="Init Dictionary Without Secrets" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Init">
+      <Assign.To>
+        <OutArgument x:TypeArguments="scg:Dictionary(x:String, x:Object)">[out_Config]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="scg:Dictionary(x:String, x:Object)">[New Dictionary(Of String, Object) From { {"RF_Api_BaseUrl", "http://localhost:5000"}, {"RF_Api_Token", If(Environment.GetEnvironmentVariable("RF_API_TOKEN"), "rf_robot_bearer_token_dev_secret_key_123456")}, {"RF_Use_LLM", "False"}, {"RF_Llm_Model", "gemini-2.5-flash"}, {"RF_Llm_ApiKey", If(Environment.GetEnvironmentVariable("RF_LLM_API_KEY"), "")}, {"RF_Email_Mode", "SIMULATION"}, {"RF_Env", "DEMO"}, {"RF_Smtp_Host", "smtp.gmail.com"}, {"RF_Smtp_Port", "587"}, {"RF_Sender_Email", "recruitment@recruitflow.id"}, {"RF_Temp_Dir", "Data\Temp"}, {"RF_Report_Dir", "Data\Output"}, {"RF_Ocr_MinChars", "200"} }]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <Assign DisplayName="Resolve Config Path" sap:VirtualizedContainerService.HintSize="478,82" sap2010:WorkflowViewState.IdRef="Assign_Path">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[cfgPath]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">[If(String.IsNullOrEmpty(in_ConfigFile), "Data\Config\Config.xlsx", in_ConfigFile)]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <TryCatch DisplayName="Read Config.xlsx If Exists" sap:VirtualizedContainerService.HintSize="478,460" sap2010:WorkflowViewState.IdRef="TryCatch_1">
+      <TryCatch.Try>
+        <Sequence DisplayName="Read Settings Sheet" sap:VirtualizedContainerService.HintSize="440,360" sap2010:WorkflowViewState.IdRef="Sequence_Read">
+          <ui:ReadRange Range="{x:Null}" AddHeaders="True" DataTable="[dtSettings]" DisplayName="Read Settings Sheet" sap:VirtualizedContainerService.HintSize="400,120" sap2010:WorkflowViewState.IdRef="ReadRange_1" SheetName="Settings" WorkbookPath="[cfgPath]" />
+          <ui:ForEachRow ColumnNames="{x:Null}" CurrentIndex="{x:Null}" DataTable="[dtSettings]" DisplayName="Populate Config Dictionary" sap:VirtualizedContainerService.HintSize="400,200" sap2010:WorkflowViewState.IdRef="ForEachRow_1">
+            <ui:ForEachRow.Body>
+              <ActivityAction x:TypeArguments="sd:DataRow">
+                <ActivityAction.Argument>
+                  <DelegateInArgument x:TypeArguments="sd:DataRow" Name="row" />
+                </ActivityAction.Argument>
+                <If Condition="[Not String.IsNullOrWhiteSpace(row(&quot;Name&quot;).ToString()) AndAlso Not String.IsNullOrWhiteSpace(row(&quot;Value&quot;).ToString())]" DisplayName="Skip Empty Keys Or Empty Values" sap:VirtualizedContainerService.HintSize="360,140" sap2010:WorkflowViewState.IdRef="If_Row">
+                  <If.Then>
+                    <Assign DisplayName="Set Config Entry" sap:VirtualizedContainerService.HintSize="320,82" sap2010:WorkflowViewState.IdRef="Assign_Row">
+                      <Assign.To>
+                        <OutArgument x:TypeArguments="x:Object">[out_Config(row("Name").ToString().Trim())]</OutArgument>
+                      </Assign.To>
+                      <Assign.Value>
+                        <InArgument x:TypeArguments="x:Object">[row("Value")]</InArgument>
+                      </Assign.Value>
+                    </Assign>
+                  </If.Then>
+                </If>
+              </ActivityAction>
+            </ui:ForEachRow.Body>
+          </ui:ForEachRow>
+        </Sequence>
+      </TryCatch.Try>
+      <TryCatch.Catches>
+        <Catch x:TypeArguments="s:Exception" sap:VirtualizedContainerService.HintSize="404,22" sap2010:WorkflowViewState.IdRef="Catch_1">
+          <ActivityAction x:TypeArguments="s:Exception">
+            <ActivityAction.Argument>
+              <DelegateInArgument x:TypeArguments="s:Exception" Name="ex" />
+            </ActivityAction.Argument>
+            <ui:LogMessage DisplayName="Fallback Config Warning" sap:VirtualizedContainerService.HintSize="334,143" sap2010:WorkflowViewState.IdRef="LogMessage_Warn" Level="Warn" Message="[&quot;[Load_Config] Menggunakan konfigurasi default lokal: &quot; &amp; ex.Message]" />
+          </ActivityAction>
+        </Catch>
+      </TryCatch.Catches>
+    </TryCatch>
+  </Sequence>
+</Activity>

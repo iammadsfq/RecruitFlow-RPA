@@ -1,0 +1,79 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Test_Score_Candidate" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=System.Private.CoreLib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:uta="clr-namespace:UiPath.Testing.Activities;assembly=UiPath.Testing.Activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <TextExpression.NamespacesForImplementation>
+    <scg:List x:TypeArguments="x:String" Capacity="32">
+      <x:String>System.Activities</x:String>
+      <x:String>System.Activities.Statements</x:String>
+      <x:String>System</x:String>
+      <x:String>System.Collections.Generic</x:String>
+      <x:String>UiPath.Core</x:String>
+      <x:String>UiPath.Core.Activities</x:String>
+      <x:String>UiPath.Testing.Activities</x:String>
+    </scg:List>
+  </TextExpression.NamespacesForImplementation>
+  <TextExpression.ReferencesForImplementation>
+    <scg:List x:TypeArguments="AssemblyReference" Capacity="32">
+      <AssemblyReference>System.Activities</AssemblyReference>
+      <AssemblyReference>System.Private.CoreLib</AssemblyReference>
+      <AssemblyReference>UiPath.System.Activities</AssemblyReference>
+      <AssemblyReference>UiPath.Testing.Activities</AssemblyReference>
+    </scg:List>
+  </TextExpression.ReferencesForImplementation>
+  <Sequence sap2010:Annotation.AnnotationText="Test Case Otomatis: Memvalidasi formula bobot Score_Candidate.xaml (SESUAI=100.0, PERLU_DICEK=67.5, dan Knock-out=TIDAK_SESUAI)." DisplayName="Test_Score_Candidate" sap:VirtualizedContainerService.HintSize="512,720" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:Double" Name="score1" />
+      <Variable x:TypeArguments="x:String" Name="group1" />
+      <Variable x:TypeArguments="x:String" Name="bd1" />
+      <Variable x:TypeArguments="x:Double" Name="score2" />
+      <Variable x:TypeArguments="x:String" Name="group2" />
+      <Variable x:TypeArguments="x:String" Name="bd2" />
+      <Variable x:TypeArguments="x:Double" Name="score3" />
+      <Variable x:TypeArguments="x:String" Name="group3" />
+      <Variable x:TypeArguments="x:String" Name="bd3" />
+    </Sequence.Variables>
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Case 1: Ideal Candidate" sap:VirtualizedContainerService.HintSize="450,145" sap2010:WorkflowViewState.IdRef="Invoke_1" UnSafe="False" WorkflowFileName="Workflows\CV_Screening\Score_Candidate.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Education">S1</InArgument>
+        <InArgument x:TypeArguments="x:Double" x:Key="in_ExperienceYears">[2.5]</InArgument>
+        <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedReqCount">[4]</InArgument>
+        <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedPrefCount">[2]</InArgument>
+        <InArgument x:TypeArguments="x:Boolean" x:Key="in_IsKnockoutFailed">[False]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_KnockoutReason">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:Double" x:Key="in_Confidence">[0.96]</InArgument>
+        <OutArgument x:TypeArguments="x:Double" x:Key="out_Score">[score1]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_Group">[group1]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_BreakdownJson">[bd1]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <uta:VerifyExpression AlternativeVerificationTitle="{x:Null}" KeepScreenshots="{x:Null}" OutputMessageFormat="{x:Null}" Result="{x:Null}" ScreenshotsPath="{x:Null}" ContinueOnFailure="True" DisplayName="Verify Ideal = 100.0 &amp; SESUAI" Expression="[score1 = 100.0 AndAlso group1.Equals(&quot;SESUAI&quot;)]" sap:VirtualizedContainerService.HintSize="450,122" sap2010:WorkflowViewState.IdRef="Verify_1" TakeScreenshotInCaseOfFailingAssertion="False" TakeScreenshotInCaseOfSucceedingAssertion="False" />
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Case 2: Mid Candidate (67.5)" sap:VirtualizedContainerService.HintSize="450,145" sap2010:WorkflowViewState.IdRef="Invoke_2" UnSafe="False" WorkflowFileName="Workflows\CV_Screening\Score_Candidate.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Education">S1</InArgument>
+        <InArgument x:TypeArguments="x:Double" x:Key="in_ExperienceYears">[1.0]</InArgument>
+        <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedReqCount">[3]</InArgument>
+        <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedPrefCount">[1]</InArgument>
+        <InArgument x:TypeArguments="x:Boolean" x:Key="in_IsKnockoutFailed">[False]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_KnockoutReason">[String.Empty]</InArgument>
+        <InArgument x:TypeArguments="x:Double" x:Key="in_Confidence">[0.96]</InArgument>
+        <OutArgument x:TypeArguments="x:Double" x:Key="out_Score">[score2]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_Group">[group2]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_BreakdownJson">[bd2]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <uta:VerifyExpression AlternativeVerificationTitle="{x:Null}" KeepScreenshots="{x:Null}" OutputMessageFormat="{x:Null}" Result="{x:Null}" ScreenshotsPath="{x:Null}" ContinueOnFailure="True" DisplayName="Verify Mid = 67.5 &amp; PERLU_DICEK" Expression="[score2 = 67.5 AndAlso group2.Equals(&quot;PERLU_DICEK&quot;)]" sap:VirtualizedContainerService.HintSize="450,122" sap2010:WorkflowViewState.IdRef="Verify_2" TakeScreenshotInCaseOfFailingAssertion="False" TakeScreenshotInCaseOfSucceedingAssertion="False" />
+    <ui:InvokeWorkflowFile ArgumentsVariable="{x:Null}" ContinueOnError="False" DisplayName="Case 3: Knockout Failed" sap:VirtualizedContainerService.HintSize="450,145" sap2010:WorkflowViewState.IdRef="Invoke_3" UnSafe="False" WorkflowFileName="Workflows\CV_Screening\Score_Candidate.xaml">
+      <ui:InvokeWorkflowFile.Arguments>
+        <InArgument x:TypeArguments="x:String" x:Key="in_Education">SMA</InArgument>
+        <InArgument x:TypeArguments="x:Double" x:Key="in_ExperienceYears">[0.5]</InArgument>
+        <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedReqCount">[2]</InArgument>
+        <InArgument x:TypeArguments="x:Int32" x:Key="in_MatchedPrefCount">[0]</InArgument>
+        <InArgument x:TypeArguments="x:Boolean" x:Key="in_IsKnockoutFailed">[True]</InArgument>
+        <InArgument x:TypeArguments="x:String" x:Key="in_KnockoutReason">Pendidikan di bawah S1</InArgument>
+        <InArgument x:TypeArguments="x:Double" x:Key="in_Confidence">[0.95]</InArgument>
+        <OutArgument x:TypeArguments="x:Double" x:Key="out_Score">[score3]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_Group">[group3]</OutArgument>
+        <OutArgument x:TypeArguments="x:String" x:Key="out_BreakdownJson">[bd3]</OutArgument>
+      </ui:InvokeWorkflowFile.Arguments>
+    </ui:InvokeWorkflowFile>
+    <uta:VerifyExpression AlternativeVerificationTitle="{x:Null}" KeepScreenshots="{x:Null}" OutputMessageFormat="{x:Null}" Result="{x:Null}" ScreenshotsPath="{x:Null}" ContinueOnFailure="True" DisplayName="Verify Knockout = TIDAK_SESUAI" Expression="[group3.Equals(&quot;TIDAK_SESUAI&quot;)]" sap:VirtualizedContainerService.HintSize="450,122" sap2010:WorkflowViewState.IdRef="Verify_3" TakeScreenshotInCaseOfFailingAssertion="False" TakeScreenshotInCaseOfSucceedingAssertion="False" />
+  </Sequence>
+</Activity>
